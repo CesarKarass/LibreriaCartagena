@@ -52,10 +52,45 @@ body {
 .search button { width: 76px; border: 0; background: var(--turquesa); color: #fff; cursor: pointer; display: grid; place-items: center; }
 .search button:hover { background: var(--turquesa-osc); }
 
-.nav { display: flex; gap: 2.5rem; }
+.nav { display: flex; align-items: center; gap: 1.7rem; }
 .nav__link { display: flex; align-items: center; gap: 0.6rem; color: var(--pergamino); text-decoration: none; font-size: 1.6rem; }
 .nav__link:hover { color: #fff; }
 .badge { min-width: 1.7rem; height: 1.7rem; padding: 0 0.4rem; border-radius: 999px; background: var(--oro); color: var(--ciruela); font-size: 0.95rem; font-weight: 700; display: grid; place-items: center; }
+
+.nav__link--panel {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--oro);
+  border: 1px solid var(--oro);
+  border-radius: 3px;
+}
+.nav__link--panel:hover { color: #fff; background: rgba(217, 160, 91, 0.14); }
+.nav__link--cuenta { gap: 0.7rem; }
+.nav__account { display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem; line-height: 1.15; }
+.nav__account-name { max-width: 16ch; overflow: hidden; font-size: 1rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.nav__account-hint { font-size: 0.72rem; color: #c9a9c8; }
+.role { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 999px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; line-height: 1.4; text-transform: uppercase; }
+.role--admin { background: #e9bc72; color: var(--ciruela); }
+.role--vendedor { background: var(--turquesa); color: #fff; }
+.role--cliente { background: var(--pergamino); color: var(--ciruela); }
+.nav__logout {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.55rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--pergamino);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.nav__logout:hover { color: #fff; background: rgba(217, 160, 91, 0.14); }
+.nav__logout:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
 
 /* ---------- Catálogo ---------- */
 .main { padding: 1.9rem; }
@@ -88,20 +123,110 @@ body {
 
 .state { padding: 2rem 0; font-size: 1rem; }
 .state--error { color: #9b1c1c; }
+.state--ok { color: #2f6b4f; }
 .pendiente { padding: 3rem 0; font-size: 1.1rem; }
+
+/* ---------- Mi cuenta y administración ---------- */
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.account__hero {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1.6rem;
+  background: linear-gradient(135deg, #fbf1dc 0%, var(--pergamino) 55%, #efd9b2 100%);
+  border: 1px solid var(--oro);
+  border-radius: 10px;
+  box-shadow: 0 10px 26px rgba(58, 0, 54, 0.12);
+}
+
+.account__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--oro);
+  background: var(--ciruela);
+  border: 2px solid var(--oro);
+  border-radius: 50%;
+}
+
+.account__avatar--admin { font-size: 2.3rem; }
+.account__identity h1 { margin: 0.1rem 0 0.15rem; font-size: clamp(1.6rem, 3vw, 2.2rem); line-height: 1.1; color: var(--ciruela); }
+.account__eyebrow { margin: 0; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--turquesa-osc); }
+.account__handle { margin: 0 0 0.45rem; font-size: 0.85rem; color: #7a5a78; }
+.account__identity .role { padding: 0.25rem 0.75rem; font-size: 0.72rem; }
+
+.account__grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.4rem; align-items: start; }
+
+.panel { padding: 1.4rem; background: var(--pergamino); border: 1px solid var(--oro); border-radius: 8px; }
+.panel h2 { margin: 0 0 0.9rem; padding-bottom: 0.45rem; font-size: 1.05rem; border-bottom: 1px solid rgba(217, 160, 91, 0.6); }
+.panel .state { padding: 0.6rem 0; }
+
+.account__data { display: grid; gap: 0.75rem; margin: 0; }
+.account__data > div { display: grid; grid-template-columns: 9rem 1fr; gap: 1rem; padding-bottom: 0.55rem; border-bottom: 1px dashed rgba(217, 160, 91, 0.45); }
+.account__data > div:last-child { padding-bottom: 0; border-bottom: 0; }
+.account__data dt { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--turquesa-osc); }
+.account__data dd { margin: 0; font-size: 0.92rem; overflow-wrap: anywhere; }
+
+.panel--rol { color: var(--pergamino); background: linear-gradient(160deg, var(--ciruela) 0%, #2c0029 100%); }
+.panel--rol h2 { border-bottom-color: rgba(217, 160, 91, 0.45); }
+.panel__rol { margin: 0; font-size: 1.6rem; font-weight: 700; color: var(--oro); }
+.panel__descripcion { margin: 0.25rem 0 0.9rem; font-size: 0.88rem; color: #d9c3d7; }
+.account__capacidades { display: grid; gap: 0.4rem; margin: 0; padding-left: 1.1rem; font-size: 0.85rem; color: #f0dfc9; }
+.account__capacidades li::marker { color: var(--oro); }
+
+.account__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; }
+.account__actions .btn { display: inline-flex; align-items: center; justify-content: center; width: auto; padding: 0.7rem 1.2rem; text-decoration: none; }
+.btn--outline { color: var(--ciruela); background: transparent; border: 1px solid var(--ciruela); }
+.btn--outline:hover:not(:disabled) { color: var(--pergamino); background: var(--ciruela); }
+.btn--peligro { background: #8d2c36; }
+.btn--peligro:hover:not(:disabled) { background: #74222b; }
+
+.state--denegado { max-width: 680px; margin: 2rem auto; padding: 2rem; background: var(--pergamino); border: 1px solid var(--oro); border-radius: 8px; }
+.state--denegado h1 { margin-top: 0; }
+.state--denegado .btn { display: inline-flex; width: auto; margin-top: 0.5rem; padding: 0.65rem 1.1rem; text-decoration: none; }
+
+.account__seccion { margin: 0 0 0.9rem; font-size: 1.05rem; color: var(--ciruela); }
+.admin__modules { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.admin__module { display: flex; flex-direction: column; gap: 0.35rem; padding: 1.1rem; background: var(--pergamino); border: 1px solid var(--oro); border-radius: 8px; }
+.admin__module h3 { margin: 0; font-size: 0.98rem; color: var(--ciruela); }
+.admin__module p { flex: 1; margin: 0; font-size: 0.82rem; color: #6b5069; }
+.admin__pendiente { align-self: flex-start; margin-top: 0.5rem; padding: 0.12rem 0.45rem; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--turquesa-osc); border: 1px dashed rgba(59, 122, 158, 0.6); border-radius: 999px; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
   .header { grid-template-columns: 1fr auto; }
   .search { grid-column: 1 / -1; grid-row: 2; max-width: none; }
+  .nav { gap: 1.2rem; }
+}
+@media (max-width: 900px) {
+  .account__grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 800px) {
   .catalog { grid-template-columns: 1fr; }
   .header { grid-template-columns: 1fr; justify-items: center; text-align: center; }
   .brand__logo { width: 76px; height: 76px; }
-  .nav { gap: 1.5rem; }
+  .nav { flex-wrap: wrap; justify-content: center; gap: 1rem; }
   .nav__link { font-size: 1.2rem; }
   .nav__link svg { width: 30px; height: 30px; }
+  .nav__account-name { max-width: 18ch; }
   .main { padding: 1rem; }
+}
+@media (max-width: 600px) {
+  .account__hero { flex-direction: column; text-align: center; }
+  .account__identity { display: flex; flex-direction: column; align-items: center; }
+  .account__data > div { grid-template-columns: 1fr; gap: 0.15rem; }
+  .account__actions .btn { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
