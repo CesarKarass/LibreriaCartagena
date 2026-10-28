@@ -7,6 +7,7 @@ import LoginPage from '../features/auth/LoginPage';
 import RegisterPage from '../features/auth/RegisterPage';
 import ResetPasswordPage from '../features/auth/ResetPasswordPage';
 import HomePage from '../features/catalog/HomePage';
+import CartPage from '../features/cart/CartPage';
 import RequireAuth from './RequireAuth';
 
 function Pendiente({ titulo }: { titulo: string }) {
@@ -24,7 +25,7 @@ export default function AppRoutes() {
 
       <Route element={<Layout />}>
         <Route path="/" element={<HomePage />} />
-        <Route path="/carrito" element={<Pendiente titulo="Carrito" />} />
+        <Route path="/carrito" element={<CartPage />} />
         <Route
           path="/cuenta"
           element={
