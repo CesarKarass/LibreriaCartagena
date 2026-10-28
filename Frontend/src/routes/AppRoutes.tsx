@@ -12,6 +12,8 @@ import CartPage from '../features/cart/CartPage';
 import CheckoutPage from '../features/checkout/CheckoutPage';
 import PedidoPage from '../features/checkout/PedidoPage';
 import AdminInventarioPage from '../features/admin/AdminInventarioPage';
+import TerminosPage from '../features/legal/TerminosPage';
+import AvisoPrivacidadPage from '../features/legal/AvisoPrivacidadPage';
 import RequireAuth from './RequireAuth';
 
 function Pendiente({ titulo }: { titulo: string }) {
@@ -72,6 +74,9 @@ export default function AppRoutes() {
             </RequireAuth>
           }
         />
+        {/* Páginas legales: públicas, con la cabecera y el pie del catálogo. */}
+        <Route path="/terminos" element={<TerminosPage />} />
+        <Route path="/aviso-privacidad" element={<AvisoPrivacidadPage />} />
         <Route path="*" element={<Pendiente titulo="Página no encontrada" />} />
       </Route>
     </Routes>
