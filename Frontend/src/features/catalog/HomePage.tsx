@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import BookCard from '../../components/books/BookCard';
 import FiltersPanel from '../../components/books/FiltersPanel';
 import { useBooks, useFilterOptions } from '../../hooks/useBooks';
@@ -25,20 +25,39 @@ export default function HomePage() {
   };
 
   return (
-    <div className="catalog">
-      <FiltersPanel filters={filters} options={options} onChange={setFilter} />
-      <section aria-live="polite">
-        {loading && <p className="state">Cargando libros…</p>}
-        {error && <p className="state state--error">{error}</p>}
-        {!loading && !error && books.length === 0 && (
-          <p className="state">No encontramos libros con esos criterios. Prueba con otro título, autor o ISBN, o quita algún filtro.</p>
-        )}
-        {!loading && !error && books.length > 0 && (
-          <div className="grid">
-            {books.map((b) => <BookCard key={b.id} book={b} />)}
-          </div>
-        )}
-      </section>
-    </div>
+    <>
+      {/* Encabezado fuera de la grilla para no desplazar columnas */}
+      <div className="catalog__head">
+        <h1 className="catalog__titulo">Catálogo de Libros</h1>
+        <p className="catalog__conteo">
+          {books.length} libro{books.length !== 1 ? 's' : ''} encontrado{books.length !== 1 ? 's' : ''}
+        </p>
+      </div>
+
+      <div className="catalog">
+        <FiltersPanel filters={filters} options={options} onChange={setFilter} />
+
+        <section aria-live="polite">
+          {loading && (
+            <p className="state">Cargando libros…</p>
+          )}
+          {error && (
+            <p className="state state--error">{error}</p>
+          )}
+          {!loading && !error && books.length === 0 && (
+            <p className="state">No encontramos libros con esos criterios. Prueba con otro título, autor o ISBN, o quita algún filtro.</p>
+          )}
+          {!loading && !error && books.length > 0 && (
+            <div className="grid">
+              {books.map((b) => (
+                <Link to={`/libro/${b.id}`} key={b.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <BookCard book={b} />
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </>
   );
 }

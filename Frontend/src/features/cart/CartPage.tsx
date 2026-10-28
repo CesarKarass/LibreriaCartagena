@@ -5,8 +5,18 @@ import { useAuth } from '../../context/AuthContext';
 const money = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
 
 export default function CartPage() {
-  const { items, totalItems, totalPrecio, setCantidad, removeFromCart, clearCart } = useCart();
+  const { items, totalItems, totalPrecio, setCantidad, removeFromCart, clearCart, sincronizando } = useCart();
   const { autenticado } = useAuth();
+
+  // Al recargar con sesión, el carrito se descarga del servidor: evitamos parpadeo de "vacío".
+  if (items.length === 0 && sincronizando) {
+    return (
+      <section className="cart cart--vacio">
+        <h1 className="cart__title">Tu carrito</h1>
+        <p className="state" aria-live="polite">Sincronizando tu carrito…</p>
+      </section>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -26,14 +36,17 @@ export default function CartPage() {
     return total + descuento * cantidad;
   }, 0);
 
+  const envio = 50.00;
+  const totalConEnvio = totalPrecio + envio;
+
   return (
     <section className="cart">
       <header className="cart__header">
         <div>
-          <p className="cart__eyebrow">Compra</p>
-          <h1 className="cart__title">Tu carrito</h1>
+          <p className="cart__eyebrow">Cesta de Libros Seleccionados</p>
+          <h1 className="cart__title">Tu Carrito</h1>
           <p className="cart__subtitulo">
-            {totalItems} {totalItems === 1 ? 'artículo' : 'artículos'} listos para llevar
+            {totalItems} {totalItems === 1 ? 'artículo' : 'artículos'} en tu cesta
           </p>
         </div>
         <button type="button" className="btn btn--outline cart__limpiar" onClick={clearCart}>
@@ -50,8 +63,8 @@ export default function CartPage() {
               <li className="cart-item" key={book.id}>
                 <div className="cart-item__cover">
                   {book.portadaUrl
-                    ? <img src={book.portadaUrl} alt={`Portada de ${book.titulo}`} loading="lazy" />
-                    : <span>{book.titulo}</span>}
+                    ? <img src={book.portadaUrl} alt={`Portada de ${book.titulo}`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    : <span style={{ fontSize: '0.6rem', color: '#6b5069' }}>{book.titulo}</span>}
                 </div>
 
                 <div className="cart-item__info">
@@ -104,45 +117,52 @@ export default function CartPage() {
           })}
         </ul>
 
-        <aside className="panel cart__resumen" aria-label="Resumen de compra">
-          <h2>Resumen</h2>
+        <aside className="panel cart__resumen" aria-label="Resumen de compra" style={{ position: 'sticky', top: '1rem' }}>
+          <h2 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: 'var(--tinta)', borderBottom: '1px solid #c9a9c8', paddingBottom: '0.5rem' }}>Resumen del Pedido</h2>
           <dl className="cart__lineas">
             <div>
-              <dt>Artículos</dt>
-              <dd>{totalItems}</dd>
+              <dt>Subtotal de libros</dt>
+              <dd>{money.format(totalPrecio)}</dd>
             </div>
             <div>
-              <dt>Subtotal</dt>
-              <dd>{money.format(totalPrecio)}</dd>
+              <dt>Envío a Domicilio</dt>
+              <dd>{money.format(envio)}</dd>
             </div>
             {ahorro > 0 && (
               <div className="cart__ahorro">
-                <dt>Ahorras</dt>
-                <dd>−{money.format(ahorro)}</dd>
+                <dt>Descuentos aplicados</dt>
+                <dd style={{ color: '#2f6b4f' }}>- {money.format(ahorro)}</dd>
               </div>
             )}
-            <div>
-              <dt>Envío</dt>
-              <dd>Se calcula al finalizar</dd>
-            </div>
           </dl>
 
-          <p className="cart__total">
-            <span>Total</span>
-            <strong>{money.format(totalPrecio)}</strong>
-          </p>
+          <div className="cart__total" style={{ marginTop: '1rem' }}>
+            <span>Total a Pagar</span>
+            <strong>{money.format(totalConEnvio)}</strong>
+          </div>
 
           <Link
-            to={autenticado ? '/cuenta' : '/login'}
-            state={autenticado ? undefined : { from: '/carrito' }}
+            to="/checkout"
             className="btn cart__pagar"
+            style={{ width: '100%', marginTop: '1rem', textAlign: 'center', textDecoration: 'none', display: 'block' }}
           >
-            {autenticado ? 'Ir a mi cuenta' : 'Inicia sesión para pagar'}
+            Proceder al Pago / Checkout
           </Link>
-          <Link to="/" className="cart__seguir">Seguir comprando</Link>
+          {!autenticado && (
+            <p className="cart__invitado">
+              Para comprar necesitas una cuenta. Puedes seguir juntando libros aquí; al pagar te
+              pediremos <Link to="/login" state={{ from: '/checkout' }}>iniciar sesión</Link> o{' '}
+              <Link to="/registro" state={{ from: '/checkout' }}>registrarte</Link>.
+            </p>
+          )}
+          <Link to="/" className="cart__seguir" style={{ display: 'block', textAlign: 'center', marginTop: '0.75rem', textDecoration: 'none', color: 'var(--turquesa-osc)', fontSize: '0.85rem' }}>
+            Seguir comprando
+          </Link>
 
           <p className="cart__nota">
-            Tu carrito se guarda en este dispositivo. El pago en línea estará disponible muy pronto.
+            {autenticado
+              ? 'Tu carrito queda guardado en tu cuenta: puedes continuar la compra desde cualquier dispositivo.'
+              : 'Tu carrito se guarda en este dispositivo mientras exploras. Al pagar te pediremos crear una cuenta.'}
           </p>
         </aside>
       </div>

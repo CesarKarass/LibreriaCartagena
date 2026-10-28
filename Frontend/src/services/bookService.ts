@@ -1,6 +1,6 @@
 import { mockBooks } from '../mocks/books';
-import type { Book, BookFilters, LibroApi } from '../types/book';
-import { apiGet } from './api';
+import type { Book, BookFilters, LibroApi, Resena } from '../types/book';
+import { apiGet, apiPost } from './api';
 
 const USE_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true';
 
@@ -54,6 +54,45 @@ export async function getBooks(filters: BookFilters): Promise<Book[]> {
     genero: filters.genero,
     formato: filters.formato,
   });
+}
+
+/** Detalle de un libro por id (para la ficha del libro). */
+export async function getBookById(id: string): Promise<Book> {
+  if (USE_MOCKS) {
+    await new Promise((r) => setTimeout(r, 150));
+    const found = mockBooks.find((b) => b.id === id);
+    if (!found) throw new Error('Libro no encontrado');
+    return found;
+  }
+  const res = await apiGet<{ data: LibroApi }>(`/libros/${encodeURIComponent(id)}`);
+  return fromApi(res.data);
+}
+
+/** Reseñas reales de un libro, persistidas en la base de datos. */
+export async function getResenas(id: string): Promise<{
+  resenas: Resena[];
+  total: number;
+  promedio: number;
+}> {
+  try {
+    const res = await apiGet<{ data: Resena[]; total: number; promedio: number }>(
+      `/libros/${encodeURIComponent(id)}/resenas`,
+    );
+    return { resenas: res.data ?? [], total: res.total ?? 0, promedio: Number(res.promedio ?? 0) };
+  } catch {
+    // Sin conexión al backend: mostramos la sección vacía en lugar de romper la ficha.
+    return { resenas: [], total: 0, promedio: 0 };
+  }
+}
+
+/** Publica una reseña (sólo compradores verificados). */
+export async function crearResena(
+  id: string,
+  calificacion: number,
+  texto: string,
+  token: string | null,
+): Promise<void> {
+  await apiPost(`/libros/${encodeURIComponent(id)}/resenas`, { calificacion, texto }, token);
 }
 
 /** Opciones de los filtros, calculadas a partir del catálogo completo. */

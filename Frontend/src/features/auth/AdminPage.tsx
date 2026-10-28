@@ -14,7 +14,9 @@ const MODULOS = [
   },
   {
     titulo: 'Catálogo e inventario',
-    descripcion: 'Libros, precios, existencias y ofertas de la librería.',
+    descripcion: 'CRUD de libros, precios, descuentos y alertas de stock mínimo/máximo.',
+    ruta: '/admin/inventario',
+    etiqueta: 'Abrir módulo',
   },
   {
     titulo: 'Pedidos y ventas',
@@ -22,7 +24,9 @@ const MODULOS = [
   },
   {
     titulo: 'Reportes',
-    descripcion: 'Indicadores de ventas y comportamiento del catálogo.',
+    descripcion: 'Indicadores de ventas y descarga del reporte de inventario en PDF.',
+    ruta: '/admin/inventario',
+    etiqueta: 'Ver reportes',
   },
 ];
 
@@ -105,7 +109,13 @@ export default function AdminPage() {
             <article className="admin__module" key={modulo.titulo}>
               <h3>{modulo.titulo}</h3>
               <p>{modulo.descripcion}</p>
-              <span className="admin__pendiente">Módulo en construcción</span>
+              {modulo.ruta ? (
+                <Link className="admin__abrir" to={modulo.ruta}>
+                  {modulo.etiqueta ?? 'Abrir'} →
+                </Link>
+              ) : (
+                <span className="admin__pendiente">Módulo en construcción</span>
+              )}
             </article>
           ))}
         </div>
