@@ -479,6 +479,39 @@ body {
 .pill--ok { color: #24543e; background: #dff0e4; }
 .pill--bajo { color: #9b1c1c; background: #fbdcdc; }
 .pill--alto { color: #a85b00; background: #ffe8c2; }
+
+/* ---------- Módulo de proveedores y compras ---------- */
+/* Reutiliza el layout de .admin-inv; sólo añade pestañas y renglones de pedido. */
+.admin-prov__tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-bottom: 0.7rem; border-bottom: 2px solid rgba(217, 160, 91, 0.6); }
+.admin-prov__tab { padding: 0.5rem 1.05rem; font: 700 0.82rem var(--serif); color: var(--ciruela); background: transparent; border: 1px solid var(--ciruela); border-radius: 999px; cursor: pointer; }
+.admin-prov__tab:hover { background: #f6ecd9; }
+.admin-prov__tab[aria-selected='true'] { color: var(--pergamino); background: var(--ciruela); border-color: var(--ciruela); }
+.admin-prov__tab:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 2px; }
+.admin-prov__descripcion { margin: 0.65rem 0 0; font-size: 0.84rem; color: #7a5a78; }
+.admin-prov__panel { display: flex; flex-direction: column; gap: 1.2rem; }
+.admin-inv__toolbar > .btn { width: auto; align-self: flex-end; padding: 0.6rem 1.2rem; }
+.admin-prov__dos { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.2rem; align-items: start; }
+.admin-prov__dos .panel { display: flex; flex-direction: column; }
+.admin-prov__dos .btn { width: auto; align-self: flex-start; padding: 0.65rem 1.4rem; }
+.admin-prov__nota { margin: 0 0 1rem; font-size: 0.82rem; line-height: 1.6; color: #6b5069; }
+.admin-prov__ayuda { display: block; margin-top: 0.3rem; font-size: 0.72rem; color: #7a5a78; }
+.admin-prov__lineas-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 1.2rem 0 0.7rem; padding-bottom: 0.4rem; border-bottom: 1px solid rgba(217, 160, 91, 0.45); }
+.admin-prov__lineas-head h3 { margin: 0; font-size: 0.95rem; color: var(--ciruela); }
+.admin-prov__lineas { display: flex; flex-direction: column; gap: 0.8rem; }
+.admin-prov__linea { display: grid; grid-template-columns: minmax(0, 2.6fr) minmax(0, 0.8fr) minmax(0, 1fr) auto; gap: 0.7rem; align-items: end; padding: 0.7rem; background: #fbf3e4; border: 1px solid rgba(217, 160, 91, 0.45); border-radius: 6px; }
+.admin-prov__linea .field { margin: 0; }
+.admin-prov__linea-acciones { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; }
+.admin-prov__importe { font-size: 0.82rem; font-weight: 700; color: var(--oro-texto); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-prov__total { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: 1rem; padding-top: 0.8rem; border-top: 2px solid rgba(217, 160, 91, 0.6); font-size: 0.9rem; color: var(--turquesa-osc); }
+.admin-prov__total strong { font-size: 1.25rem; color: var(--ciruela); font-variant-numeric: tabular-nums; }
+.admin-prov__detalle { display: flex; flex-direction: column; gap: 0.8rem; }
+.admin-prov__detalle .admin-inv__form-head { margin-bottom: 0; }
+.admin-prov__detalle .admin-inv__form-head h2 { display: flex; align-items: center; gap: 0.6rem; }
+.admin-prov__detalle .admin-inv__tabla { border-top: 1px solid rgba(217, 160, 91, 0.45); }
+.admin-prov__mes { flex: 0 0 auto; max-width: 220px; }
+.admin-inv__tabla tfoot td { padding: 0.7rem 0.8rem; text-align: left; background: #f6ecd9; border-top: 2px solid rgba(217, 160, 91, 0.7); }
+.admin-inv__tabla tfoot .num { text-align: right; font-variant-numeric: tabular-nums; }
+
 .admin__abrir { align-self: flex-start; margin-top: 0.5rem; font: 700 0.8rem var(--serif); color: var(--turquesa-osc); text-decoration: none; }
 .admin__abrir:hover { text-decoration: underline; }
 .cart__invitado { margin: 0.8rem 0 0; font-size: 0.8rem; line-height: 1.6; color: #6b5069; text-align: center; }
@@ -533,6 +566,8 @@ body {
   .checkout__campos,
   .checkout__tarjeta,
   .admin-inv__campos { grid-template-columns: 1fr; }
+  .admin-prov__linea { grid-template-columns: 1fr; }
+  .admin-prov__linea-acciones { flex-direction: row; justify-content: space-between; align-items: center; }
   .pedido__acciones .btn { width: 100%; }
   .admin-inv__acciones { width: 100%; }
   .admin-inv__acciones .btn { flex: 1; }

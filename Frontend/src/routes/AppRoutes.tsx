@@ -12,6 +12,7 @@ import CartPage from '../features/cart/CartPage';
 import CheckoutPage from '../features/checkout/CheckoutPage';
 import PedidoPage from '../features/checkout/PedidoPage';
 import AdminInventarioPage from '../features/admin/AdminInventarioPage';
+import AdminProveedoresPage from '../features/admin/proveedores/AdminProveedoresPage';
 import TerminosPage from '../features/legal/TerminosPage';
 import AvisoPrivacidadPage from '../features/legal/AvisoPrivacidadPage';
 import RequireAuth from './RequireAuth';
@@ -55,6 +56,14 @@ export default function AppRoutes() {
           element={
             <RequireAuth roles={['ADMIN']}>
               <AdminInventarioPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/proveedores"
+          element={
+            <RequireAuth roles={['ADMIN']}>
+              <AdminProveedoresPage />
             </RequireAuth>
           }
         />

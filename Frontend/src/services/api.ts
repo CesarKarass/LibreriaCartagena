@@ -14,8 +14,9 @@ export class ApiError extends Error {
 async function errorDesde(res: Response, path: string): Promise<never> {
   let detalle = '';
   try {
-    const datos = (await res.json()) as { error?: string; mensaje?: string };
-    detalle = datos?.error ?? datos?.mensaje ?? '';
+    // C# responde {error}, el microservicio de login {mensaje} y Flask {message}.
+    const datos = (await res.json()) as { error?: string; mensaje?: string; message?: string };
+    detalle = datos?.error ?? datos?.mensaje ?? datos?.message ?? '';
   } catch {
     // Respuesta sin cuerpo JSON.
   }

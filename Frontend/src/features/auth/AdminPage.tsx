@@ -23,6 +23,13 @@ const MODULOS = [
     descripcion: 'Seguimiento de compras, pagos y entregas.',
   },
   {
+    titulo: 'Proveedores y compras',
+    descripcion:
+      'Directorio de proveedores, pedidos de compra, mermas, devoluciones y reportes de abastecimiento.',
+    ruta: '/admin/proveedores',
+    etiqueta: 'Abrir módulo',
+  },
+  {
     titulo: 'Reportes',
     descripcion: 'Indicadores de ventas y descarga del reporte de inventario en PDF.',
     ruta: '/admin/inventario',
