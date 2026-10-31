@@ -4,13 +4,14 @@ import AuthLayout from '../../components/auth/AuthLayout';
 import { AuthAlert, AuthSubmit } from '../../components/auth/FormFeedback';
 import { PasswordField, TextField } from '../../components/auth/TextField';
 import { restablecerContrasena } from '../../services/authService';
+import { validarContrasena } from '../../utils/validacion';
 import { mensajeErrorAuth } from './mensajes';
 
 const TOKEN_VALIDO = /^[0-9a-f]{64}$/;
 
 export default function ResetPasswordPage() {
   const [parametros] = useSearchParams();
-  const correo = parametros.get('correo');
+  const tokenEnUrl = Boolean(parametros.get('token'));
 
   const [token, setToken] = useState(parametros.get('token') ?? '');
   const [contrasena, setContrasena] = useState('');
@@ -29,11 +30,8 @@ export default function ResetPasswordPage() {
     if (!TOKEN_VALIDO.test(tokenNormalizado)) {
       nuevos.token = 'El token debe tener 64 caracteres hexadecimales.';
     }
-    if (contrasena.length < 8) {
-      nuevos.contrasena = 'La contraseña debe tener al menos 8 caracteres.';
-    } else if (contrasena.length > 200) {
-      nuevos.contrasena = 'La contraseña no puede superar 200 caracteres.';
-    }
+    const problemaContrasena = validarContrasena(contrasena);
+    if (problemaContrasena) nuevos.contrasena = problemaContrasena;
     if (confirmar !== contrasena) {
       nuevos.confirmar = 'Las contraseñas no coinciden.';
     }
@@ -55,6 +53,7 @@ export default function ResetPasswordPage() {
   if (listo) {
     return (
       <AuthLayout
+        variante="restablecer"
         titulo="Contraseña actualizada"
         footer={
           <p>
@@ -78,41 +77,39 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      titulo="Crea una contraseña nueva"
-      subtitulo={
-        correo
-          ? `Pega el token que enviamos a ${correo}.`
-          : 'Pega el token que recibiste por correo y define tu nueva contraseña.'
-      }
+      variante="restablecer"
       footer={
         <p>
-          <Link to="/recuperar-password">Solicitar otro token</Link>
+          <Link to="/login">← Ir a Iniciar Sesión</Link>
         </p>
       }
     >
       <form className="auth-form" onSubmit={onSubmit} noValidate>
         {errorGeneral && <AuthAlert tipo="error">{errorGeneral}</AuthAlert>}
 
-        <TextField
-          label="Token de recuperación"
-          id="reset-token"
-          name="token"
-          autoComplete="one-time-code"
-          autoCapitalize="none"
-          spellCheck={false}
-          autoFocus={!token}
-          placeholder="64 caracteres hexadecimales"
-          value={token}
-          onChange={(evento) => setToken(evento.target.value)}
-          error={errores.token}
-          hint="Viene en el correo de recuperación. Caduca a los 20 minutos."
-        />
+        {!tokenEnUrl && (
+          <TextField
+            label="Token de recuperación"
+            id="reset-token"
+            name="token"
+            autoComplete="one-time-code"
+            autoCapitalize="none"
+            spellCheck={false}
+            autoFocus={!token}
+            placeholder="64 caracteres hexadecimales"
+            value={token}
+            onChange={(evento) => setToken(evento.target.value)}
+            error={errores.token}
+            hint="Viene en el correo de recuperación. Caduca a los 20 minutos."
+          />
+        )}
 
         <PasswordField
           label="Nueva contraseña"
           id="reset-contrasena"
           name="contrasena"
           autoComplete="new-password"
+          autoFocus={tokenEnUrl}
           placeholder="Mínimo 8 caracteres"
           value={contrasena}
           onChange={(evento) => setContrasena(evento.target.value)}
@@ -130,8 +127,8 @@ export default function ResetPasswordPage() {
           error={errores.confirmar}
         />
 
-        <AuthSubmit cargando={enviando} textoCargando="Actualizando contraseña…">
-          Cambiar contraseña
+        <AuthSubmit cargando={enviando} textoCargando="Restableciendo contraseña…">
+          Restablecer Contraseña
         </AuthSubmit>
       </form>
     </AuthLayout>

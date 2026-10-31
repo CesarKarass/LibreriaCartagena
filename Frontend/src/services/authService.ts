@@ -190,6 +190,26 @@ export async function consultarPanelAdmin(token: string): Promise<{ idUsuario: n
   return validarRespuesta(cuerpo);
 }
 
+export interface DisponibilidadUsuario {
+  valido: boolean;
+  disponible: boolean;
+  sugerencias: string[];
+}
+
+/** Consulta pública para detectar usuarios duplicados y sugerir alternativas. */
+export async function consultarDisponibilidadUsuario(
+  nombre: string,
+  nombreCompleto?: string,
+): Promise<DisponibilidadUsuario> {
+  const parametros = new URLSearchParams({ nombre });
+  if (nombreCompleto?.trim()) parametros.set('nombreCompleto', nombreCompleto.trim());
+  const cuerpo = await solicitar<RespuestaApi<DisponibilidadUsuario>>(
+    `${AUTH_API_URL}/auth/usuario-disponible?${parametros.toString()}`,
+    { method: 'GET' },
+  );
+  return validarRespuesta(cuerpo);
+}
+
 /** La recuperación de contraseña vive en la API de cuentas (C#). */
 export async function solicitarRecuperacion(correo: string): Promise<string> {
   const cuerpo = await solicitar<{ mensaje?: string }>(

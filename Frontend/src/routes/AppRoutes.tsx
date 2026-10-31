@@ -12,7 +12,12 @@ import CartPage from '../features/cart/CartPage';
 import CheckoutPage from '../features/checkout/CheckoutPage';
 import PedidoPage from '../features/checkout/PedidoPage';
 import AdminInventarioPage from '../features/admin/AdminInventarioPage';
+import AdminLogisticaPage from '../features/admin/AdminLogisticaPage';
+import AdminPedidosPage from '../features/admin/AdminPedidosPage';
+import AdminUsuariosPage from '../features/admin/AdminUsuariosPage';
 import AdminProveedoresPage from '../features/admin/proveedores/AdminProveedoresPage';
+import ConfiguracionPage from '../features/auth/ConfiguracionPage';
+import MisPedidosPage from '../features/pedidos/MisPedidosPage';
 import TerminosPage from '../features/legal/TerminosPage';
 import AvisoPrivacidadPage from '../features/legal/AvisoPrivacidadPage';
 import RequireAuth from './RequireAuth';
@@ -64,6 +69,46 @@ export default function AppRoutes() {
           element={
             <RequireAuth roles={['ADMIN']}>
               <AdminProveedoresPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/usuarios"
+          element={
+            <RequireAuth roles={['ADMIN']}>
+              <AdminUsuariosPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/logistica"
+          element={
+            <RequireAuth roles={['ADMIN', 'REPARTIDOR']}>
+              <AdminLogisticaPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/pedidos"
+          element={
+            <RequireAuth roles={['ADMIN']}>
+              <AdminPedidosPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/mis-pedidos"
+          element={
+            <RequireAuth>
+              <MisPedidosPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/configuracion"
+          element={
+            <RequireAuth>
+              <ConfiguracionPage />
             </RequireAuth>
           }
         />

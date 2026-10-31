@@ -34,6 +34,10 @@ interface AuthContextValue {
   iniciarSesion: (credenciales: CredencialesLogin) => Promise<Sesion>;
   registrar: (datos: DatosRegistro) => Promise<ResultadoRegistro>;
   cerrarSesion: () => void;
+  actualizarDatosUsuario: (datos: {
+    nombreCompleto?: string | null;
+    email?: string | null;
+  }) => void;
   tieneRol: (...roles: Rol[]) => boolean;
 }
 
@@ -92,6 +96,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     borrarSesionGuardada();
     setSesion(null);
   }, []);
+
+  const actualizarDatosUsuario = useCallback(
+    (datos: { nombreCompleto?: string | null; email?: string | null }) => {
+      setSesion((actual) => {
+        if (!actual) return actual;
+        const nueva: Sesion = {
+          ...actual,
+          nombreCompleto:
+            datos.nombreCompleto === undefined ? actual.nombreCompleto : datos.nombreCompleto,
+          email: datos.email === undefined ? actual.email : datos.email,
+        };
+        guardarSesion(nueva);
+        return nueva;
+      });
+    },
+    [],
+  );
 
   const iniciarSesion = useCallback(async (credenciales: CredencialesLogin) => {
     const nuevaSesion = await iniciarSesionApi(credenciales);
@@ -198,9 +219,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       iniciarSesion,
       registrar,
       cerrarSesion,
+      actualizarDatosUsuario,
       tieneRol: (...roles) => Boolean(usuario && roles.includes(usuario.rol)),
     }),
-    [sesion, usuario, cargando, iniciarSesion, registrar, cerrarSesion],
+    [sesion, usuario, cargando, iniciarSesion, registrar, cerrarSesion, actualizarDatosUsuario],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

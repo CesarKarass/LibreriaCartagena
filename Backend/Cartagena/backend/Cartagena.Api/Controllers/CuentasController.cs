@@ -6,6 +6,7 @@ using Cartagena.Api.Dtos;
 using Cartagena.Api.Infrastructure;
 using Cartagena.Api.Services;
 using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Cartagena.Api.Controllers;
@@ -69,6 +70,68 @@ public sealed class CuentasController(DbFactory db,MailService mail) : ApiContro
           """,new {hash,uid},tx);
         await tx.CommitAsync();
         return Ok(new {ok=true});
+    }
+
+    // -----------------------------------------------------------------------
+    // Configuración de la cuenta (usuario autenticado)
+    // -----------------------------------------------------------------------
+
+    [HttpGet("perfil")]
+    [Authorize]
+    public async Task<IActionResult> Perfil()
+    {
+        await using var cn=await Db.OpenAsync();
+        var perfil=await cn.QueryFirstOrDefaultAsync("""
+          SELECT u.id_usuario, u.nombre, u.nombre_usuario, u.correo, u.telefono,
+                 u.correo_verificado, u.activo, u.fecha_registro, u.ultimo_acceso,
+                 UPPER(r.nombre) AS rol
+          FROM usuario u JOIN rol r ON r.id_rol=u.id_rol
+          WHERE u.id_usuario=@uid
+          """,new { uid=UserId });
+        Ensure(perfil is not null,"Usuario no encontrado",404);
+        return Ok(perfil);
+    }
+
+    [HttpPatch("perfil")]
+    [Authorize]
+    public async Task<IActionResult> ActualizarPerfil([FromBody] PerfilActualizarDto d)
+    {
+        Ensure(Validaciones.ValidarNombre(d.Nombre) is null,Validaciones.ValidarNombre(d.Nombre) ?? "");
+        Ensure(Validaciones.ValidarCorreo(d.Correo) is null,Validaciones.ValidarCorreo(d.Correo) ?? "");
+        if (!string.IsNullOrWhiteSpace(d.Telefono))
+            Ensure(Validaciones.ValidarTelefono(d.Telefono) is null,Validaciones.ValidarTelefono(d.Telefono) ?? "");
+
+        var correo=d.Correo.Trim().ToLowerInvariant();
+        var telefono=Validaciones.SoloDigitos(d.Telefono);
+        await using var cn=await Db.OpenAsync();
+        var duplicado=await cn.ExecuteScalarAsync<int>(
+            "SELECT COUNT(*) FROM usuario WHERE correo=@correo AND id_usuario<>@uid",new { correo,uid=UserId });
+        Ensure(duplicado==0,"El correo ya está registrado por otra cuenta",409);
+
+        await cn.ExecuteAsync("""
+          UPDATE usuario SET nombre=@nombre, correo=@correo, telefono=@telefono
+          WHERE id_usuario=@uid
+          """,new { nombre=d.Nombre.Trim(), correo, telefono, uid=UserId });
+        return Ok(new { ok=true, nombre=d.Nombre.Trim(), correo, telefono });
+    }
+
+    [HttpPost("contrasena")]
+    [Authorize]
+    public async Task<IActionResult> CambiarContrasena([FromBody] ContrasenaCambioDto d)
+    {
+        Ensure(!string.IsNullOrWhiteSpace(d.Actual),"Escribe tu contraseña actual");
+        Ensure(Validaciones.ValidarContrasena(d.Nueva) is null,Validaciones.ValidarContrasena(d.Nueva) ?? "");
+        await using var cn=await Db.OpenAsync();
+        var hash=await cn.QueryFirstOrDefaultAsync<string>(
+            "SELECT contrasena_hash FROM usuario WHERE id_usuario=@uid",new { uid=UserId });
+        Ensure(hash is not null,"Usuario no encontrado",404);
+        Ensure(BCrypt.Net.BCrypt.Verify(d.Actual,hash),"La contraseña actual no es correcta",401);
+        var nuevo=BCrypt.Net.BCrypt.HashPassword(d.Nueva);
+        await cn.ExecuteAsync("""
+          UPDATE usuario SET contrasena_hash=@nuevo, intentos_fallidos=0, bloqueado_hasta=NULL
+          WHERE id_usuario=@uid
+          """,new { nuevo, uid=UserId });
+        return Ok(new { ok=true });
     }
 
     private static string Digest(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token))).ToLowerInvariant();

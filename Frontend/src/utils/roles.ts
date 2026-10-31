@@ -4,12 +4,16 @@ export const ETIQUETA_ROL: Record<Rol, string> = {
   ADMIN: 'Administrador',
   VENDEDOR: 'Vendedor',
   CLIENTE: 'Cliente',
+  PROVEEDOR: 'Proveedor',
+  REPARTIDOR: 'Repartidor',
 };
 
 export const DESCRIPCION_ROL: Record<Rol, string> = {
   ADMIN: 'Control total del sistema, usuarios y reportes.',
   VENDEDOR: 'Gestión de productos, inventario y pedidos.',
   CLIENTE: 'Compra en el catálogo y consulta tus pedidos.',
+  PROVEEDOR: 'Surtido de libros, pedidos de compra y devoluciones.',
+  REPARTIDOR: 'Seguimiento de envíos, guías y entregas a domicilio.',
 };
 
 export const CAPACIDADES_ROL: Record<Rol, string[]> = {
@@ -28,14 +32,32 @@ export const CAPACIDADES_ROL: Record<Rol, string[]> = {
     'Consultar el historial de compras',
     'Administrar los datos de tu cuenta',
   ],
+  PROVEEDOR: [
+    'Consultar pedidos de compra',
+    'Registrar devoluciones de mercancía',
+    'Revisar el estado de abastecimiento',
+  ],
+  REPARTIDOR: [
+    'Actualizar el estado de los envíos',
+    'Asignar números de guía',
+    'Validar la entrega de pedidos',
+  ],
 };
 
 export function esRol(valor: unknown): valor is Rol {
-  return valor === 'ADMIN' || valor === 'VENDEDOR' || valor === 'CLIENTE';
+  return (
+    valor === 'ADMIN' ||
+    valor === 'VENDEDOR' ||
+    valor === 'CLIENTE' ||
+    valor === 'PROVEEDOR' ||
+    valor === 'REPARTIDOR'
+  );
 }
 
 export function rutaInicioPorRol(rol: Rol): string {
-  return rol === 'ADMIN' ? '/admin' : '/';
+  if (rol === 'ADMIN') return '/admin';
+  if (rol === 'REPARTIDOR') return '/admin/logistica';
+  return '/';
 }
 
 export function nombreParaMostrar(usuario: {
@@ -43,4 +65,13 @@ export function nombreParaMostrar(usuario: {
   nombreUsuario: string;
 }): string {
   return usuario.nombreCompleto?.trim() || usuario.nombreUsuario;
+}
+
+export function inicialesDe(nombre: string): string {
+  return nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((parte) => parte[0]?.toUpperCase() ?? '')
+    .join('');
 }

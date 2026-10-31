@@ -55,6 +55,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
+      variante="login"
       footer={
         <p>
           ¿No tienes cuenta? <Link to="/registro">Regístrate aquí</Link>

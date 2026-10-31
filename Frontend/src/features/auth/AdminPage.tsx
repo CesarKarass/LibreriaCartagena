@@ -11,6 +11,8 @@ const MODULOS = [
   {
     titulo: 'Usuarios y roles',
     descripcion: 'Alta de usuarios, asignación de roles y control de cuentas.',
+    ruta: '/admin/usuarios',
+    etiqueta: 'Abrir módulo',
   },
   {
     titulo: 'Catálogo e inventario',
@@ -21,6 +23,14 @@ const MODULOS = [
   {
     titulo: 'Pedidos y ventas',
     descripcion: 'Seguimiento de compras, pagos y entregas.',
+    ruta: '/admin/pedidos',
+    etiqueta: 'Abrir módulo',
+  },
+  {
+    titulo: 'Logística y entregas',
+    descripcion: 'Actualización de estados, guías manuales y validación de entregas.',
+    ruta: '/admin/logistica',
+    etiqueta: 'Abrir módulo',
   },
   {
     titulo: 'Proveedores y compras',

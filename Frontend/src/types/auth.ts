@@ -1,4 +1,4 @@
-export type Rol = 'ADMIN' | 'VENDEDOR' | 'CLIENTE';
+export type Rol = 'ADMIN' | 'VENDEDOR' | 'CLIENTE' | 'PROVEEDOR' | 'REPARTIDOR';
 
 export interface DatosSesion {
   autenticado: boolean;

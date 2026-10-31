@@ -1,11 +1,21 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
 import { AuthAlert, AuthSubmit } from '../../components/auth/FormFeedback';
 import Recaptcha from '../../components/auth/Recaptcha';
 import { PasswordField, TextField } from '../../components/auth/TextField';
 import { useAuth } from '../../context/AuthContext';
-import { AuthApiError } from '../../services/authService';
+import { AuthApiError, consultarDisponibilidadUsuario } from '../../services/authService';
+import {
+  requisitosContrasena,
+  soloDigitos,
+  sugerenciasUsuario,
+  validarContrasena,
+  validarCorreo,
+  validarNombreCompleto,
+  validarNombreUsuario,
+  validarTelefono,
+} from '../../utils/validacion';
 import { destinoTrasAutenticar, erroresPorCampo, mensajeErrorAuth } from './mensajes';
 
 interface Campos {
@@ -26,7 +36,7 @@ const CAMPOS_INICIALES: Campos = {
   confirmar: '',
 };
 
-const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+type EstadoDisponibilidad = 'inicial' | 'verificando' | 'disponible' | 'ocupado' | 'sin-conexion';
 
 export default function RegisterPage() {
   const { autenticado, cargando, registrar, usuario } = useAuth();
@@ -40,43 +50,83 @@ export default function RegisterPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaReset, setCaptchaReset] = useState(0);
   const [verificacion, setVerificacion] = useState<string | null>(null);
+  const [disponibilidad, setDisponibilidad] = useState<EstadoDisponibilidad>('inicial');
+  const [sugerencias, setSugerencias] = useState<string[]>([]);
 
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  const requisitos = useMemo(() => requisitosContrasena(campos.contrasena), [campos.contrasena]);
 
   useEffect(() => {
     if (cargando || !autenticado || !usuario) return;
     navigate(destinoTrasAutenticar(location.state, usuario.rol), { replace: true });
   }, [cargando, autenticado, usuario, location.state, navigate]);
 
+  // Comprueba en el servidor si el nombre de usuario ya existe (con rebote).
+  useEffect(() => {
+    const nombre = campos.nombreUsuario.trim();
+    if (validarNombreUsuario(nombre)) {
+      setDisponibilidad('inicial');
+      setSugerencias([]);
+      return;
+    }
+
+    let cancelado = false;
+    setDisponibilidad('verificando');
+    const temporizador = window.setTimeout(async () => {
+      try {
+        const resultado = await consultarDisponibilidadUsuario(nombre, campos.nombreCompleto);
+        if (cancelado) return;
+        if (resultado.disponible) {
+          setDisponibilidad('disponible');
+          setSugerencias([]);
+        } else {
+          setDisponibilidad('ocupado');
+          setSugerencias(resultado.sugerencias ?? []);
+        }
+      } catch {
+        if (cancelado) return;
+        setDisponibilidad('sin-conexion');
+        setSugerencias(sugerenciasUsuario(nombre, campos.nombreCompleto));
+      }
+    }, 500);
+
+    return () => {
+      cancelado = true;
+      window.clearTimeout(temporizador);
+    };
+  }, [campos.nombreUsuario, campos.nombreCompleto]);
+
   const actualizar = (campo: keyof Campos) => (evento: ChangeEvent<HTMLInputElement>) => {
-    setCampos((actuales) => ({ ...actuales, [campo]: evento.target.value }));
+    const valor = evento.target.value;
+    setCampos((actuales) => ({
+      ...actuales,
+      [campo]: campo === 'telefono' ? soloDigitos(valor).slice(0, 10) : valor,
+    }));
+    setErrores((actuales) => {
+      if (!actuales[campo]) return actuales;
+      const siguiente = { ...actuales };
+      delete siguiente[campo];
+      return siguiente;
+    });
   };
 
   const validar = () => {
     const nuevos: Record<string, string> = {};
-    if (campos.nombreCompleto.trim().length < 2) {
-      nuevos.nombreCompleto = 'Escribe tu nombre completo.';
-    }
-    if (campos.nombreUsuario.trim().length < 3) {
-      nuevos.nombreUsuario = 'El nombre de usuario debe tener al menos 3 caracteres.';
-    } else if (campos.nombreUsuario.trim().length > 60) {
-      nuevos.nombreUsuario = 'El nombre de usuario no puede superar 60 caracteres.';
-    }
-    if (!CORREO_VALIDO.test(campos.email.trim())) {
-      nuevos.email = 'Escribe un correo electrónico válido.';
-    }
-    if (campos.telefono.trim().length < 7) {
-      nuevos.telefono = 'El teléfono debe tener al menos 7 caracteres.';
-    } else if (campos.telefono.trim().length > 30) {
-      nuevos.telefono = 'El teléfono no puede superar 30 caracteres.';
-    }
-    if (campos.contrasena.length < 8) {
-      nuevos.contrasena = 'La contraseña debe tener al menos 8 caracteres.';
-    } else if (campos.contrasena.length > 200) {
-      nuevos.contrasena = 'La contraseña no puede superar 200 caracteres.';
-    }
-    if (campos.confirmar !== campos.contrasena) {
-      nuevos.confirmar = 'Las contraseñas no coinciden.';
+    const nombreCompleto = validarNombreCompleto(campos.nombreCompleto);
+    const nombreUsuario = validarNombreUsuario(campos.nombreUsuario);
+    const email = validarCorreo(campos.email);
+    const telefono = validarTelefono(campos.telefono);
+    const contrasena = validarContrasena(campos.contrasena);
+
+    if (nombreCompleto) nuevos.nombreCompleto = nombreCompleto;
+    if (nombreUsuario) nuevos.nombreUsuario = nombreUsuario;
+    if (email) nuevos.email = email;
+    if (telefono) nuevos.telefono = telefono;
+    if (contrasena) nuevos.contrasena = contrasena;
+    if (campos.confirmar !== campos.contrasena) nuevos.confirmar = 'Las contraseñas no coinciden.';
+
+    if (disponibilidad === 'ocupado') {
+      nuevos.nombreUsuario = 'Ese nombre de usuario ya está registrado. Elige otro o usa una sugerencia.';
     }
 
     setErrores(nuevos);
@@ -99,8 +149,8 @@ export default function RegisterPage() {
       const resultado = await registrar({
         nombreCompleto: campos.nombreCompleto.trim(),
         nombreUsuario: campos.nombreUsuario.trim(),
-        email: campos.email.trim(),
-        telefono: campos.telefono.trim(),
+        email: campos.email.trim().toLowerCase(),
+        telefono: soloDigitos(campos.telefono),
         contrasena: campos.contrasena,
         captchaToken: captchaToken ?? undefined,
       });
@@ -114,6 +164,14 @@ export default function RegisterPage() {
       setCaptchaToken(null);
       setCaptchaReset((valor) => valor + 1);
 
+      if (error instanceof AuthApiError && error.codigo === 'USUARIO_YA_EXISTE') {
+        setDisponibilidad('ocupado');
+        setErrores((actuales) => ({
+          ...actuales,
+          nombreUsuario: 'Ese nombre de usuario o correo ya está registrado.',
+        }));
+      }
+
       if (error instanceof AuthApiError && error.codigo === 'DATOS_INVALIDOS') {
         setErrorGeneral('Revisa los campos marcados e inténtalo de nuevo.');
       }
@@ -125,6 +183,7 @@ export default function RegisterPage() {
   if (verificacion) {
     return (
       <AuthLayout
+        variante="registro"
         titulo="Cuenta creada"
         footer={
           <p>
@@ -146,8 +205,7 @@ export default function RegisterPage() {
   return (
     <AuthLayout
       amplio
-      titulo="Crea tu cuenta"
-      subtitulo="Regístrate para comprar tus libros favoritos y seguir tus pedidos."
+      variante="registro"
       footer={
         <p>
           ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
@@ -162,25 +220,88 @@ export default function RegisterPage() {
           id="registro-nombre"
           name="nombreCompleto"
           autoComplete="name"
-          placeholder="ej. Alicia Liddell"
+          placeholder="Ej. Alicia Liddell"
           value={campos.nombreCompleto}
           onChange={actualizar('nombreCompleto')}
           error={errores.nombreCompleto}
+          hint="Solo letras, espacios, apóstrofes, puntos y guiones."
         />
 
         <TextField
-          label="Nombre de usuario"
+          label="Usuario"
           id="registro-usuario"
           name="nombreUsuario"
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="ej. alicia"
+          placeholder="Ej. alicia_wonder"
           value={campos.nombreUsuario}
           onChange={actualizar('nombreUsuario')}
           error={errores.nombreUsuario}
-          hint="Entre 3 y 60 caracteres. Lo usarás para iniciar sesión."
+          hint={
+            disponibilidad === 'inicial'
+              ? 'Entre 3 y 60 caracteres. Lo usarás para iniciar sesión.'
+              : undefined
+          }
         />
+
+        {disponibilidad !== 'inicial' && (
+          <div
+            className={`auth-disponibilidad auth-disponibilidad--${disponibilidad}`}
+            role="status"
+            aria-live="polite"
+          >
+            {disponibilidad === 'verificando' && <p>Comprobando disponibilidad…</p>}
+            {disponibilidad === 'disponible' && <p>✓ Nombre de usuario disponible.</p>}
+            {disponibilidad === 'ocupado' && (
+              <>
+                <p>✗ Ese nombre de usuario ya está registrado. Te sugerimos:</p>
+                {sugerencias.length > 0 && (
+                  <div className="auth-sugerencias">
+                    {sugerencias.map((sugerencia) => (
+                      <button
+                        key={sugerencia}
+                        type="button"
+                        className="auth-sugerencia"
+                        onClick={() => {
+                          setCampos((actuales) => ({ ...actuales, nombreUsuario: sugerencia }));
+                          setErrores((actuales) => {
+                            const siguiente = { ...actuales };
+                            delete siguiente.nombreUsuario;
+                            return siguiente;
+                          });
+                        }}
+                      >
+                        {sugerencia}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+            {disponibilidad === 'sin-conexion' && (
+              <>
+                <p>No pudimos verificar en línea. Puedes continuar; el servidor validará el duplicado.</p>
+                {sugerencias.length > 0 && (
+                  <div className="auth-sugerencias">
+                    {sugerencias.map((sugerencia) => (
+                      <button
+                        key={sugerencia}
+                        type="button"
+                        className="auth-sugerencia"
+                        onClick={() =>
+                          setCampos((actuales) => ({ ...actuales, nombreUsuario: sugerencia }))
+                        }
+                      >
+                        {sugerencia}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         <TextField
           label="Correo electrónico"
@@ -190,11 +311,11 @@ export default function RegisterPage() {
           autoComplete="email"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="ej. alicia@wonderland.com"
+          placeholder="alicia@wonderland.com"
           value={campos.email}
           onChange={actualizar('email')}
           error={errores.email}
-          hint="Ahí recibirás los avisos de tu cuenta."
+          hint="Debe incluir @ y terminar en .com."
         />
 
         <TextField
@@ -202,12 +323,14 @@ export default function RegisterPage() {
           id="registro-telefono"
           name="telefono"
           type="tel"
+          inputMode="numeric"
           autoComplete="tel"
-          placeholder="ej. 55 1234 5678"
+          maxLength={10}
+          placeholder="Ej. 5512345678"
           value={campos.telefono}
           onChange={actualizar('telefono')}
           error={errores.telefono}
-          hint="Entre 7 y 30 caracteres."
+          hint={`Exactamente 10 dígitos (${campos.telefono.length}/10).`}
         />
 
         <PasswordField
@@ -220,6 +343,17 @@ export default function RegisterPage() {
           onChange={actualizar('contrasena')}
           error={errores.contrasena}
         />
+
+        <ul className="auth-requisitos" aria-label="Requisitos de la contraseña">
+          {requisitos.map((requisito) => (
+            <li
+              key={requisito.clave}
+              className={requisito.cumple ? 'auth-requisito auth-requisito--ok' : 'auth-requisito'}
+            >
+              <span aria-hidden="true">{requisito.cumple ? '✓' : '○'}</span> {requisito.etiqueta}
+            </li>
+          ))}
+        </ul>
 
         <PasswordField
           label="Confirmar contraseña"
@@ -235,7 +369,7 @@ export default function RegisterPage() {
         <Recaptcha onToken={setCaptchaToken} resetKey={captchaReset} />
 
         <AuthSubmit cargando={enviando} textoCargando="Creando cuenta…">
-          Crear cuenta
+          Crear Cuenta
         </AuthSubmit>
       </form>
     </AuthLayout>

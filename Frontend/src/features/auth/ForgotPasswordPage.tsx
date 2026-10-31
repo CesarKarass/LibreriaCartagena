@@ -39,6 +39,7 @@ export default function ForgotPasswordPage() {
   if (mensaje) {
     return (
       <AuthLayout
+        variante="recuperar"
         titulo="Revisa tu correo"
         footer={
           <p>
@@ -68,11 +69,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      titulo="Recuperar contraseña"
-      subtitulo="Escribe el correo de tu cuenta y te enviaremos un token para crear una contraseña nueva."
+      variante="recuperar"
       footer={
         <p>
-          ¿Recordaste tu contraseña? <Link to="/login">Inicia sesión</Link>
+          <Link to="/login">← Volver al Inicio de Sesión</Link>
         </p>
       }
     >
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
         {error && <AuthAlert tipo="error">{error}</AuthAlert>}
 
         <TextField
-          label="Correo electrónico"
+          label="Correo electrónico o Usuario"
           id="recuperar-correo"
           name="correo"
           type="email"
@@ -95,8 +95,8 @@ export default function ForgotPasswordPage() {
           hint="Te enviaremos un token de un solo uso."
         />
 
-        <AuthSubmit cargando={enviando} textoCargando="Enviando instrucciones…">
-          Enviar instrucciones
+        <AuthSubmit cargando={enviando} textoCargando="Enviando enlace…">
+          Enviar Enlace de Recuperación
         </AuthSubmit>
       </form>
     </AuthLayout>
