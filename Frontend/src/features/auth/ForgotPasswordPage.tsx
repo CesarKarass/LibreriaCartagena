@@ -7,6 +7,7 @@ import { solicitarRecuperacion } from '../../services/authService';
 import { mensajeErrorAuth } from './mensajes';
 
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const USUARIO_VALIDO = /^[a-zA-Z0-9._-]{3,60}$/;
 
 export default function ForgotPasswordPage() {
   const [correo, setCorreo] = useState('');
@@ -20,8 +21,9 @@ export default function ForgotPasswordPage() {
     setError(null);
     setErrorCampo(undefined);
 
-    if (!CORREO_VALIDO.test(correo.trim())) {
-      setErrorCampo('Escribe el correo con el que creaste tu cuenta.');
+    const valor = correo.trim();
+    if (!CORREO_VALIDO.test(valor) && !USUARIO_VALIDO.test(valor)) {
+      setErrorCampo('Escribe el correo o el nombre de usuario de tu cuenta.');
       return;
     }
 

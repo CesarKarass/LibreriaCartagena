@@ -54,6 +54,11 @@ export function mensajeErrorAuth(error: unknown): string {
       return 'El servicio tardó demasiado en responder. Inténtalo de nuevo.';
     case 'BASE_DATOS_NO_DISPONIBLE':
       return 'El servicio de autenticación no está disponible en este momento. Inténtalo más tarde.';
+    case 'SMTP_NO_CONFIGURADO_O_ERROR':
+      return (
+        error.message ||
+        'El servicio de correo no está configurado. Completa las credenciales SMTP en el backend para poder recibir el token.'
+      );
     case 'NO_ENCONTRADO':
       return 'La operación no está disponible en el servidor. Contacta al administrador.';
     case 'TOKEN_INVALIDO':

@@ -44,6 +44,10 @@ function cargarScriptRecaptcha(): Promise<void> {
 
 export default function Recaptcha({ onToken, resetKey = 0 }: RecaptchaProps) {
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+  // La clave de prueba de Google dibuja una fila de aviso rojo dentro del
+  // widget; se recorta esa fila para que el widget se vea normal. Con una
+  // clave real (otro valor) no se aplica ningún recorte.
+  const esClaveDePrueba = siteKey === '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
   const contenedor = useRef<HTMLDivElement>(null);
   const widget = useRef<number | null>(null);
   const [error, setError] = useState(false);
@@ -62,7 +66,7 @@ export default function Recaptcha({ onToken, resetKey = 0 }: RecaptchaProps) {
           if (cancelado || !contenedor.current || widget.current !== null) return;
           widget.current = window.grecaptcha!.render(contenedor.current, {
             sitekey: siteKey,
-            theme: 'dark',
+            theme: 'light',
             callback: (token: string) => onToken(token),
             'expired-callback': () => onToken(null),
             'error-callback': () => {
@@ -102,23 +106,16 @@ export default function Recaptcha({ onToken, resetKey = 0 }: RecaptchaProps) {
 
   return (
     <div className="auth-captcha">
-      <div ref={contenedor} className="auth-captcha__widget" />
+      <div
+        className={`auth-captcha__marco${esClaveDePrueba ? ' auth-captcha__marco--prueba' : ''}`}
+      >
+        <div ref={contenedor} className="auth-captcha__widget" />
+      </div>
       {error && (
         <p className="auth-field__error" role="alert">
           No se pudo cargar la verificación anti-bot. Recarga la página e inténtalo de nuevo.
         </p>
       )}
-      <p className="auth-captcha__legal">
-        Protegido por reCAPTCHA. Se aplican la{' '}
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">
-          Política de Privacidad
-        </a>{' '}
-        y los{' '}
-        <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">
-          Términos de Servicio
-        </a>{' '}
-        de Google.
-      </p>
     </div>
   );
 }

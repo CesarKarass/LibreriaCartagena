@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ApiError } from '../../services/api';
 import { actualizarPerfil, cambiarContrasena, obtenerPerfil } from '../../services/tiendaService';
+import { PERSONAJES, guardarPersonaje, usePersonaje } from '../../utils/avatar';
 import { ETIQUETA_ROL, nombreParaMostrar } from '../../utils/roles';
 import {
   requisitosContrasena,
@@ -12,35 +13,6 @@ import {
   validarNombreCompleto,
   validarTelefono,
 } from '../../utils/validacion';
-
-const CLAVE_PREFERENCIAS = 'cartagena.preferencias.v1';
-
-interface Preferencias {
-  ofertas: boolean;
-  pedidos: boolean;
-  recordatorios: boolean;
-}
-
-const PREFERENCIAS_INICIALES: Preferencias = {
-  ofertas: true,
-  pedidos: true,
-  recordatorios: true,
-};
-
-function leerPreferencias(): Preferencias {
-  try {
-    const texto = localStorage.getItem(CLAVE_PREFERENCIAS);
-    if (!texto) return PREFERENCIAS_INICIALES;
-    const datos = JSON.parse(texto) as Partial<Preferencias>;
-    return {
-      ofertas: typeof datos.ofertas === 'boolean' ? datos.ofertas : true,
-      pedidos: typeof datos.pedidos === 'boolean' ? datos.pedidos : true,
-      recordatorios: typeof datos.recordatorios === 'boolean' ? datos.recordatorios : true,
-    };
-  } catch {
-    return PREFERENCIAS_INICIALES;
-  }
-}
 
 function formatearFecha(valor: string | null): string {
   if (!valor) return '—';
@@ -66,8 +38,8 @@ export default function ConfiguracionPage() {
   const [avisoClaves, setAvisoClaves] = useState<string | null>(null);
   const [errorClaves, setErrorClaves] = useState<string | null>(null);
 
-  const [preferencias, setPreferencias] = useState<Preferencias>(() => leerPreferencias());
-  const [avisoPreferencias, setAvisoPreferencias] = useState<string | null>(null);
+  const personaje = usePersonaje(usuario?.nombreUsuario);
+  const [avisoAvatar, setAvisoAvatar] = useState<string | null>(null);
 
   const requisitos = useMemo(() => requisitosContrasena(claves.nueva), [claves.nueva]);
 
@@ -169,19 +141,7 @@ export default function ConfiguracionPage() {
     }
   };
 
-  const cambiarPreferencia = (clave: keyof Preferencias) => {
-    const siguiente = { ...preferencias, [clave]: !preferencias[clave] };
-    setPreferencias(siguiente);
-    try {
-      localStorage.setItem(CLAVE_PREFERENCIAS, JSON.stringify(siguiente));
-      setAvisoPreferencias('Preferencias guardadas en este navegador.');
-    } catch {
-      setAvisoPreferencias('No se pudo guardar la preferencia en este navegador.');
-    }
-  };
-
   if (!usuario) return null;
-
   return (
     <div className="config-page">
       <header className="config-page__head">
@@ -189,7 +149,7 @@ export default function ConfiguracionPage() {
           <p className="config-page__eyebrow">Mi cuenta</p>
           <h1>Configuración</h1>
           <p className="config-page__subtitulo">
-            Administra tus datos, tu contraseña y las preferencias de tu cuenta.
+            Administra tus datos, tu contraseña y tu foto de perfil.
           </p>
         </div>
         <span className={`role role--${usuario.rol.toLowerCase()}`}>{ETIQUETA_ROL[usuario.rol]}</span>
@@ -346,49 +306,52 @@ export default function ConfiguracionPage() {
           </form>
         </section>
 
-        <section className="panel config-page__bloque" aria-labelledby="config-preferencias">
-          <h2 id="config-preferencias">Preferencias</h2>
+        <section className="panel config-page__bloque" aria-labelledby="config-avatar">
+          <h2 id="config-avatar">Foto de perfil</h2>
           <p className="config-page__nota">
-            Estas opciones se guardan en este navegador y controlan los avisos que quieres recibir.
+            Elige un personaje de fantasía para que te represente en la tienda. Se guardará al instante.
           </p>
-          <div className="config-page__checks">
-            <label className="config-check">
-              <input
-                type="checkbox"
-                checked={preferencias.ofertas}
-                onChange={() => cambiarPreferencia('ofertas')}
-              />
-              <span>
-                <strong>Novedades y ofertas</strong>
-                <em>Recibir recomendaciones y descuentos por correo.</em>
+          <div className="config-avatares">
+            <button
+              type="button"
+              className="config-avatar"
+              aria-pressed={!personaje}
+              onClick={() => {
+                guardarPersonaje(usuario.nombreUsuario, null);
+                setAvisoAvatar('Usarás tus iniciales como foto de perfil.');
+              }}
+            >
+              <span className="config-avatar__emoji" aria-hidden="true">
+                {nombreParaMostrar(usuario)
+                  .split(/\s+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((parte) => parte[0]?.toUpperCase() ?? '')
+                  .join('') || '?'}
               </span>
-            </label>
-            <label className="config-check">
-              <input
-                type="checkbox"
-                checked={preferencias.pedidos}
-                onChange={() => cambiarPreferencia('pedidos')}
-              />
-              <span>
-                <strong>Avisos de pedidos</strong>
-                <em>Notificarme cambios de estado y entregas.</em>
-              </span>
-            </label>
-            <label className="config-check">
-              <input
-                type="checkbox"
-                checked={preferencias.recordatorios}
-                onChange={() => cambiarPreferencia('recordatorios')}
-              />
-              <span>
-                <strong>Recordatorios de garantía</strong>
-                <em>Avisarme antes de que venza el plazo de devolución.</em>
-              </span>
-            </label>
+              Mis iniciales
+            </button>
+            {PERSONAJES.map((opcion) => (
+              <button
+                key={opcion.clave}
+                type="button"
+                className="config-avatar"
+                aria-pressed={personaje?.clave === opcion.clave}
+                onClick={() => {
+                  guardarPersonaje(usuario.nombreUsuario, opcion.clave);
+                  setAvisoAvatar(`Ahora tu foto de perfil es ${opcion.nombre}.`);
+                }}
+              >
+                <span className="config-avatar__emoji" aria-hidden="true">
+                  {opcion.emoji}
+                </span>
+                {opcion.nombre}
+              </button>
+            ))}
           </div>
-          {avisoPreferencias && (
+          {avisoAvatar && (
             <p className="config-page__aviso" role="status">
-              {avisoPreferencias}
+              {avisoAvatar}
             </p>
           )}
         </section>

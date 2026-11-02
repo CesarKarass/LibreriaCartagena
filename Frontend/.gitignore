@@ -6,5 +6,9 @@ dist-ssr/
 .env.*
 !.env.example
 !.env.development
+# Config de producción de Firebase Hosting: URLs públicas y site key de prueba
+# de Google, sin secretos.
+!.env.production
+.firebase/
 .vite/
 *.log

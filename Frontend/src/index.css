@@ -48,7 +48,7 @@ body {
   justify-content: space-between;
   width: 100%;
   gap: 1.25rem;
-  padding: 15px 20px;
+  padding: 11px 20px;
 }
 .menu.busqueda-centro .identidad-tienda { order: 1; }
 .menu.busqueda-centro .busqueda-menu { order: 2; }
@@ -63,14 +63,14 @@ body {
 }
 .logo-tienda {
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 78px;
+  height: 78px;
   object-fit: contain;
   border: 2px solid rgba(217, 160, 91, 0.85);
   border-radius: 50%;
 }
 .brand__slogan {
-  width: clamp(140px, 14vw, 200px);
+  width: clamp(180px, 16vw, 245px);
   height: auto;
   display: block;
   object-fit: contain;
@@ -109,19 +109,20 @@ body {
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 42px;
+  width: 46px;
   height: 38px;
   padding: 0;
   margin: 0;
   font-size: 16px;
   line-height: 1;
-  color: #222;
-  background-color: transparent;
+  color: #fff;
+  background-color: var(--turquesa);
   border: none;
+  border-radius: 0 999px 999px 0;
   cursor: pointer;
 }
-.boton-busqueda:hover { background-color: #f2f2f2; }
-.boton-busqueda:focus-visible { outline: 2px solid var(--turquesa); outline-offset: -2px; }
+.boton-busqueda:hover { background-color: var(--turquesa-osc); }
+.boton-busqueda:focus-visible { outline: 2px solid var(--oro); outline-offset: -2px; }
 
 .opciones-menu { display: flex; align-items: center; gap: 20px; }
 
@@ -131,7 +132,7 @@ body {
   align-items: center;
   gap: 0.45rem;
   padding: 0.45rem 0.65rem;
-  font: 700 0.9rem var(--serif);
+  font: 700 1rem var(--serif);
   color: var(--pergamino);
   text-decoration: none;
   background: transparent;
@@ -163,6 +164,7 @@ body {
 }
 .account-menu__head { display: flex; gap: 0.8rem; align-items: center; padding: 0.8rem 0.7rem; border-bottom: 1px solid rgba(217, 160, 91, 0.45); }
 .account-menu__avatar { display: grid; flex: none; place-items: center; width: 46px; height: 46px; font-weight: 700; color: var(--oro); background: var(--ciruela); border: 1px solid var(--oro); border-radius: 50%; }
+.account-menu__avatar-emoji { font-size: 1.5rem; line-height: 1; }
 .account-menu__identity { min-width: 0; }
 .account-menu__name { margin: 0; font-size: 0.94rem; font-weight: 700; color: var(--ciruela); overflow-wrap: anywhere; }
 .account-menu__email { margin: 0.1rem 0 0.35rem; font-size: 0.74rem; color: #7a5a78; overflow-wrap: anywhere; }
@@ -213,7 +215,7 @@ body {
 .field { margin-bottom: 1rem; }
 .field:last-child { margin-bottom: 0; }
 .field label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; font-weight: 700; color: var(--turquesa-osc); }
-.field select { width: 100%; padding: 0.6rem 0.6rem; font: 0.85rem var(--serif); color: var(--tinta); background: #fff; border: 1px solid var(--ciruela); border-radius: 3px; }
+.field select { width: 100%; padding: 0.6rem 0.6rem; font: 0.85rem var(--serif); color: var(--tinta); background: #fff; border: 1px solid #bdb6a8; border-radius: 3px; }
 .field select:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 1px; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1.4rem; }
@@ -730,6 +732,29 @@ body {
 .config-page__acciones { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.3rem; }
 .config-page__acciones .btn { width: auto; padding: 0.55rem 1rem; text-decoration: none; }
 
+/* ---------- Avatar de personaje de fantasía ---------- */
+.config-avatares { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 0.6rem; }
+.config-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.6rem 0.3rem 0.5rem;
+  font: 700 0.7rem var(--serif);
+  color: var(--tinta);
+  text-align: center;
+  background: #fff;
+  border: 1px solid rgba(217, 160, 91, 0.55);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.config-avatar__emoji { font-size: 1.9rem; line-height: 1.1; }
+.config-avatar:hover { background: #fdf6e7; border-color: var(--oro); }
+.config-avatar[aria-pressed='true'] { background: #f2f9fc; border-color: var(--turquesa); box-shadow: 0 0 0 2px rgba(74, 144, 182, 0.3); }
+.config-avatar:focus-visible { outline: 3px solid var(--turquesa); outline-offset: 1px; }
+.account__avatar--emoji { font-size: 2.7rem; line-height: 1; }
+
 /* ---------- Usuarios y roles (admin) ---------- */
 .admin-usuarios__persona { display: flex; align-items: center; gap: 0.6rem; }
 .admin-usuarios__avatar { display: grid; place-items: center; width: 34px; height: 34px; flex: none; font-size: 0.72rem; font-weight: 700; color: var(--oro); background: var(--ciruela); border-radius: 50%; }
@@ -775,7 +800,7 @@ body {
   .footer__grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .footer__diseno { text-align: left; }
   .site-header__bar { padding: 0.7rem 0.9rem; gap: 0.6rem 0.9rem; }
-  .logo-tienda { width: 40px; height: 40px; }
+  .logo-tienda { width: 50px; height: 50px; }
   .brand__slogan { display: none; }
   .header-action__text { display: none; }
   .main { padding: 1rem; }

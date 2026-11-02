@@ -4,6 +4,7 @@ import logo from '../../assets/logo.png';
 import slogan from '../../assets/Fotografias_Cartagena/Slogan.png';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { usePersonaje } from '../../utils/avatar';
 import { ETIQUETA_ROL, inicialesDe, nombreParaMostrar } from '../../utils/roles';
 
 type IconName =
@@ -113,6 +114,7 @@ export default function Header() {
   const navigate = useNavigate();
   const { totalItems } = useCart();
   const { usuario, autenticado, cerrarSesion } = useAuth();
+  const personaje = usePersonaje(usuario?.nombreUsuario);
   const [text, setText] = useState(params.get('q') ?? '');
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const cuentaRef = useRef<HTMLDivElement>(null);
@@ -212,7 +214,11 @@ export default function Header() {
                   <>
                     <div className="account-menu__head">
                       <span className="account-menu__avatar" aria-hidden="true">
-                        {inicialesDe(nombre) || 'C'}
+                        {personaje ? (
+                          <span className="account-menu__avatar-emoji">{personaje.emoji}</span>
+                        ) : (
+                          inicialesDe(nombre) || 'C'
+                        )}
                       </span>
                       <div className="account-menu__identity">
                         <p className="account-menu__name">{nombre}</p>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/auth/AuthLayout';
+import Recaptcha from '../../components/auth/Recaptcha';
 import { AuthAlert, AuthSubmit } from '../../components/auth/FormFeedback';
 import { PasswordField, TextField } from '../../components/auth/TextField';
 import { useAuth } from '../../context/AuthContext';
@@ -10,9 +11,11 @@ export default function LoginPage() {
   const { autenticado, cargando, iniciarSesion, usuario } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -38,6 +41,11 @@ export default function LoginPage() {
     evento.preventDefault();
     setErrorGeneral(null);
     if (!validar()) return;
+
+    if (siteKey && !captchaToken) {
+      setErrorGeneral('Completa la verificación anti-bot para entrar.');
+      return;
+    }
 
     setEnviando(true);
     try {
@@ -96,6 +104,8 @@ export default function LoginPage() {
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
+
+        <Recaptcha onToken={setCaptchaToken} />
 
         <AuthSubmit cargando={enviando} textoCargando="Entrando…">
           Entrar a la Madriguera

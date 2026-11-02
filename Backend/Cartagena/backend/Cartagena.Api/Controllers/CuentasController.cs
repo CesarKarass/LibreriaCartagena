@@ -12,20 +12,22 @@ using Microsoft.AspNetCore.Mvc;
 namespace Cartagena.Api.Controllers;
 
 [Route("api/cuenta")]
-public sealed class CuentasController(DbFactory db,MailService mail) : ApiControllerBase(db)
+public sealed class CuentasController(DbFactory db,MailService mail,ILogger<CuentasController> logger) : ApiControllerBase(db)
 {
     [HttpPost("verificacion/solicitar")]
     public async Task<IActionResult> SolicitarVerificacion([FromBody] CorreoDto d)
     {
         Ensure(!string.IsNullOrWhiteSpace(d.Correo),"Correo obligatorio");
         await using var cn=await Db.OpenAsync();
-        var user=await cn.QueryFirstOrDefaultAsync<UserVerify>("SELECT id_usuario,correo_verificado FROM usuario WHERE correo=@correo",new {correo=d.Correo});
+        var user=await cn.QueryFirstOrDefaultAsync<UserVerify>("SELECT id_usuario,correo,correo_verificado FROM usuario WHERE correo=@correo",new {correo=d.Correo});
         if (user is not null && !user.correo_verificado)
         {
             var token=await IssueTokenAsync(cn,user.id_usuario,"verificacion",60);
             // Sin frontend: los correos incluyen el token para que se envíe por HTTP.
-            await mail.SendAsync(d.Correo,"Verifica tu correo en Cartagena",
+            var enviado=await mail.SendAsync(user.correo,"Verifica tu correo en Cartagena",
                 "Token de verificación (válido 60 minutos): "+token+"\nEnvía POST /api/cuenta/verificacion/confirmar con {\"token\":\"...\"}.");
+            if (!enviado)
+                logger.LogWarning("Verificación sin correo (SMTP no configurado o con error). Token {Token} para {Correo} (válido 60 min).",token,user.correo);
         }
         return Ok(new {mensaje="Si corresponde, enviaremos instrucciones"});
     }
@@ -45,13 +47,33 @@ public sealed class CuentasController(DbFactory db,MailService mail) : ApiContro
     public async Task<IActionResult> SolicitarRecuperacion([FromBody] CorreoDto d)
     {
         Ensure(!string.IsNullOrWhiteSpace(d.Correo),"Correo obligatorio");
+        var dato=d.Correo.Trim();
         await using var cn=await Db.OpenAsync();
-        var uid=await cn.QueryFirstOrDefaultAsync<int?>("SELECT id_usuario FROM usuario WHERE correo=@correo",new {correo=d.Correo});
-        if (uid is not null)
+        // El formulario admite correo o nombre de usuario.
+        var user=await cn.QueryFirstOrDefaultAsync<RecoveryUser>("""
+          SELECT id_usuario,correo FROM usuario
+          WHERE correo=@dato OR nombre_usuario=@dato
+          LIMIT 1
+          """,new {dato});
+        // Respuesta idéntica exista o no la cuenta: no revelamos quién está registrado.
+        if (user is null) return Ok(new {mensaje="Si el correo existe, enviaremos instrucciones"});
+
+        var token=await IssueTokenAsync(cn,user.id_usuario,"recuperacion",20);
+        var enviado=await mail.SendAsync(user.correo,"Recupera tu contraseña en Cartagena",
+            "Hola 👋\n\nTu token de recuperación (válido 20 minutos) es:\n\n"+token+
+            "\n\nRestablece tu contraseña en /restablecer-password?token="+token+
+            "\n\nSi no pediste este correo, ignóralo.");
+
+        if (!enviado)
         {
-            var token=await IssueTokenAsync(cn,uid.Value,"recuperacion",20);
-            await mail.SendAsync(d.Correo,"Recupera tu contraseña en Cartagena",
-                "Token de recuperación (válido 20 minutos): "+token+"\nEnvía POST /api/cuenta/recuperacion/restablecer con token y nueva_contrasena.");
+            // Sin SMTP no hay correo: avisamos en lugar de fingir un éxito.
+            // En desarrollo el token queda en el log para poder probar el restablecimiento.
+            logger.LogWarning("Recuperación sin correo (SMTP no configurado o con error). Token {Token} para {Correo} (válido 20 min).",token,user.correo);
+            return StatusCode(503,new {
+                codigo="SMTP_NO_CONFIGURADO_O_ERROR",
+                estado="SMTP_NO_CONFIGURADO_O_ERROR",
+                mensaje="El servicio de correo no está configurado, así que no pudimos enviar el token. Completa SMTP_HOST, SMTP_USER, SMTP_PASSWORD y SMTP_FROM en Backend/Cartagena/.env y reinicia el backend."
+            });
         }
         return Ok(new {mensaje="Si el correo existe, enviaremos instrucciones"});
     }
@@ -162,6 +184,7 @@ public sealed class CuentasController(DbFactory db,MailService mail) : ApiContro
         return found.id_usuario;
     }
 
-    public sealed class UserVerify {public int id_usuario {get;set;} public bool correo_verificado {get;set;} }
+    public sealed class UserVerify {public int id_usuario {get;set;} public string correo {get;set;}=""; public bool correo_verificado {get;set;} }
+    public sealed class RecoveryUser {public int id_usuario {get;set;} public string correo {get;set;}=""; }
     public sealed class TokenRow {public long id {get;set;} public int id_usuario {get;set;} }
 }

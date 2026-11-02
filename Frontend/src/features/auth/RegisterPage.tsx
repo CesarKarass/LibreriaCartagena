@@ -208,7 +208,7 @@ export default function RegisterPage() {
       variante="registro"
       footer={
         <p>
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
         </p>
       }
     >

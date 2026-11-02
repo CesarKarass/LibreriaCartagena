@@ -10,7 +10,7 @@ export const ETIQUETA_ROL: Record<Rol, string> = {
 
 export const DESCRIPCION_ROL: Record<Rol, string> = {
   ADMIN: 'Control total del sistema, usuarios y reportes.',
-  VENDEDOR: 'Gestión de productos, inventario y pedidos.',
+  VENDEDOR: 'Atención en tienda y apoyo en las ventas del día a día.',
   CLIENTE: 'Compra en el catálogo y consulta tus pedidos.',
   PROVEEDOR: 'Surtido de libros, pedidos de compra y devoluciones.',
   REPARTIDOR: 'Seguimiento de envíos, guías y entregas a domicilio.',
@@ -23,9 +23,9 @@ export const CAPACIDADES_ROL: Record<Rol, string[]> = {
     'Acceder al panel de administración',
   ],
   VENDEDOR: [
-    'Gestionar productos e inventario',
-    'Atender pedidos y ventas',
-    'Consultar reportes operativos',
+    'Consultar catálogo, precios y existencias',
+    'Apoyar a los clientes en sus compras',
+    'Revisar el resumen de ventas',
   ],
   CLIENTE: [
     'Comprar en el catálogo',

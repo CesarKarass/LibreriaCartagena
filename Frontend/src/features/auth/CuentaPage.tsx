@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { usePersonaje } from '../../utils/avatar';
 import { CAPACIDADES_ROL, DESCRIPCION_ROL, ETIQUETA_ROL, nombreParaMostrar } from '../../utils/roles';
 
 function formatearFecha(valor: string | null): string {
@@ -25,6 +26,7 @@ function iniciales(nombre: string): string {
 export default function CuentaPage() {
   const { usuario, sesion, cerrarSesion } = useAuth();
   const navigate = useNavigate();
+  const personaje = usePersonaje(usuario?.nombreUsuario);
   const [ahora, setAhora] = useState(() => Date.now());
 
   useEffect(() => {
@@ -47,8 +49,11 @@ export default function CuentaPage() {
   return (
     <div className="account">
       <header className="account__hero">
-        <div className="account__avatar" aria-hidden="true">
-          {iniciales(nombre) || '?'}
+        <div
+          className={`account__avatar${personaje ? ' account__avatar--emoji' : ''}`}
+          aria-hidden="true"
+        >
+          {personaje ? personaje.emoji : iniciales(nombre) || '?'}
         </div>
         <div className="account__identity">
           <p className="account__eyebrow">Mi cuenta</p>
