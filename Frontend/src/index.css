@@ -321,6 +321,13 @@ body {
 .admin__module p { flex: 1; margin: 0; font-size: 0.82rem; color: #6b5069; }
 .admin__pendiente { align-self: flex-start; margin-top: 0.5rem; padding: 0.12rem 0.45rem; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--turquesa-osc); border: 1px dashed rgba(59, 122, 158, 0.6); border-radius: 999px; }
 
+/* Pie del panel: contacto directo de soporte. */
+.account__contacto { margin-top: 1.6rem; padding: 1.1rem 1.3rem; text-align: center; background: var(--pergamino); border: 1px solid var(--oro); border-radius: 10px; }
+.account__contacto p { margin: 0.3rem 0; font-size: 0.92rem; }
+.account__contacto-titulo { font-weight: 700; color: var(--ciruela); }
+.account__contacto a { color: var(--ciruela); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.account__contacto a:hover { color: #4b1f56; }
+
 /* ---------- Carrito ---------- */
 .cart {
   display: flex;

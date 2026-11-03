@@ -155,6 +155,16 @@ export default function AdminPage() {
           Cerrar sesión
         </button>
       </div>
+
+      <footer className="account__contacto">
+        <p className="account__contacto-titulo">¿Necesitas ayuda con el panel?</p>
+        <p>
+          Escríbenos a{' '}
+          <a href="mailto:libreriacartaagena302987@gmail.com">
+            libreriacartaagena302987@gmail.com
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
