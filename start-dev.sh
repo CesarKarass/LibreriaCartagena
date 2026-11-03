@@ -182,6 +182,10 @@ PIDS+=("$!")
   DB_USER="$DB_USER" DB_PASSWORD="$DB_PASSWORD" \
   JWT_SECRET="$JWT_SECRET" JWT_ISSUER="${JWT_ISSUER:-microservicio-login}" \
   CORS_ORIGIN="${CORS_ORIGIN:-http://localhost:5173}" \
+  SMTP_HOST="${SMTP_HOST:-}" SMTP_PORT="${SMTP_PORT:-587}" \
+  SMTP_USER="${SMTP_USER:-}" SMTP_PASSWORD="${SMTP_PASSWORD:-}" \
+  SMTP_FROM="${SMTP_FROM:-}" \
+  DOTNET_SYSTEM_NET_DISABLEIPV6=1 \
   ASPNETCORE_ENVIRONMENT=Development \
   ASPNETCORE_URLS="http://localhost:$API_PORT" \
   dotnet "$API_DIR/bin/Debug/net10.0/Cartagena.Api.dll") >"$LOGS/api.log" 2>&1 &
