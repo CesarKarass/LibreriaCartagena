@@ -12,17 +12,22 @@ cuentas de usuario y panel de administración.
 > El sitio funciona en cualquier navegador actualizado (Chrome, Firefox, Edge o Safari)
 > y se adapta a teléfono, tablet y computadora. No requiere instalar nada.
 
+![Pantalla principal: catálogo de libros](capturas/01-catalogo.jpg)
+
 ---
 
 ## 1. Crear una cuenta
 
 1. Entra al sitio y pulsa **«Regístrate aquí»** debajo del formulario de acceso.
-2. Completa los datos que pide el formulario (nombre de usuario, correo y contraseña).
+2. Completa los datos que pide el formulario (nombre completo, usuario, correo,
+   teléfono y contraseña).
 3. Marca la casilla **«No soy un robot»** (verificación anti-bot). Si no la marcas,
    el formulario avisa: *«Completa la verificación anti-bot para entrar»*.
 4. Pulsa **«Crear mi cuenta»**.
 
 Si el nombre de usuario ya existe, el formulario lo indica en el momento en que escribes.
+
+![Formulario de registro](capturas/03-registro.jpg)
 
 ### Roles (quién puede ver qué)
 
@@ -44,6 +49,8 @@ Si el nombre de usuario ya existe, el formulario lo indica en el momento en que 
 
 Después de entrar serás llevado a la página que intentabas abrir, o a tu catálogo.
 
+![Pantalla de acceso](capturas/02-login.jpg)
+
 > ⏱ **Nota:** la sesión dura **15 minutos** por seguridad. Al expirar, el sitio te pide
 > volver a entrar con tus mismos datos. Si lo ves muy seguido, puedes pedir una
 > sesión más larga al equipo técnico.
@@ -60,6 +67,16 @@ Después de entrar serás llevado a la página que intentabas abrir, o a tu cat�
    **nueva contraseña**.
 5. Inicia sesión con la contraseña nueva.
 
+![Solicitud de recuperación de contraseña](capturas/04-recuperar.jpg)
+
+> 📬 **El token va al correo registrado en tu cuenta.** Si escribiste un nombre de
+> usuario, el sistema busca la cuenta asociada y envía el token al correo que tiene
+> guardado. Revisa también la carpeta de **spam**.
+>
+> ⚠️ Las cuentas de demostración (`admin`, `cliente`, `vendedor`) tienen correos de
+> ejemplo, así que a esas direcciones nadie recibe nada. Si quieres probar el
+> flujo completo, usa una cuenta con un correo real.
+
 **Si aparece el mensaje:** *«El servicio de correo no está configurado, así que no
 pudimos enviar el token…»* significa que el servidor de correo aún no está dado de
 alta en el servidor. En ese caso escribe a
@@ -71,12 +88,21 @@ y te ayudamos a restablecerla manualmente.
 ## 4. Comprar un libro
 
 1. **Buscar:** usa la barra de búsqueda del encabezado (título, autor o ISBN) o
-   recorre el catálogo de la portada.
-2. **Ver detalle:** pulsa un libro para ver descripción, precio, reseñas y stock.
-3. **Agregar al carrito:** pulsa el botón de agregar. El contador del carrito en el
-   encabezado se actualiza al instante.
-4. **Carrito:** revisa cantidades, elimina lo que no quieras y pulsa **«Continuar
-   con la compra»**.
+   recorre el catálogo de la portada. Los filtros de la izquierda permiten
+   afinar por **categoría**, **género** y **formato**.
+2. **Ver detalle:** pulsa un libro para ver descripción, precio, stock, reseñas
+   de otros lectores y el botón de agregar.
+
+   ![Ficha de un libro](capturas/05-detalle-libro.jpg)
+
+3. **Agregar al carrito:** pulsa el botón **«Agregar al Carrito»**. El contador
+   del carrito en el encabezado se actualiza al instante.
+4. **Carrito:** revisa cantidades con los botones **−** y **+**, elimina lo que no
+   quieras con **«Quitar»** y revisa el **Resumen del Pedido** (subtotal, envío,
+   descuentos y total).
+
+   ![Carrito con libros seleccionados](capturas/06-carrito.jpg)
+
 5. **Datos de entrega:** elige o registra tu domicilio.
 6. **Pago:** confirma el método de pago y finaliza.
 7. Recibirás el comprobante y podrás descargar el **ticket en PDF** desde
@@ -99,6 +125,20 @@ Entra a **«Mi Cuenta»** (esquina superior derecha) para:
 > La sección **«Preferencias»** ya no existe: todo lo que estaba ahí pasó a **Perfil**
 > y a **Cambiar contraseña**.
 
+![Datos de la cuenta y rol](capturas/07-mi-cuenta.jpg)
+
+### 5.1 Configuración
+
+La ruta **Configuración** reúne en un solo lugar tus datos y tu seguridad:
+
+- **Datos personales:** nombre completo, usuario (no editable), correo electrónico
+  y teléfono. Cambia lo que necesites y pulsa **«Guardar cambios»**.
+- **Seguridad:** contraseña actual, nueva contraseña y confirmación. La nueva
+  contraseña debe tener al menos 8 caracteres, una letra mayúscula, un número y
+  un carácter especial.
+
+![Página de configuración](capturas/08-configuracion.jpg)
+
 ---
 
 ## 6. Panel de administración (solo rol ADMIN)
@@ -106,6 +146,8 @@ Entra a **«Mi Cuenta»** (esquina superior derecha) para:
 Si tu cuenta es **ADMIN**, verás **«Panel de administración»** con el saludo
 *«Hola, …»* y el sello **ADMIN**. El panel confirma primero tu rol con el backend
 (*«El backend confirmó tu rol ADMIN…»*) y luego muestra los módulos:
+
+![Panel de administración](capturas/09-panel-admin.jpg)
 
 | Módulo | Qué puedes hacer ahí |
 |---|---|
@@ -123,15 +165,17 @@ Al pie del panel siempre está el contacto de soporte:
 
 Ruta: **Panel → Proveedores y compras** (pestañas en la parte superior).
 
+![Módulo de proveedores](capturas/10-proveedores.jpg)
+
 **Agregar un proveedor**
 
 1. Pulsa **«+ Nuevo proveedor»**.
 2. Llena el formulario. **Nombre** es obligatorio; el resto (razón social, RFC,
    teléfono, contacto, correo y dirección) se guardan tal cual los escribas.
 3. Pulsa **«Registrar proveedor»**. Verás el aviso
-   *«Proveedor "…" registrado»* y el contador *«2 de 2 proveedores»*.
+   *«Proveedor "…" registrado»* y el contador *«1 de 1 proveedores»*.
 
-**Editar:** pulsa **«Editar»** en la fila, cambia lo que necesites y guarda.
+**Editar:** pulsa **«Editar»** en la fila, cambia lo que necesites y guardar.
 **Eliminar:** pulsa **«Eliminar»** y confirma. Solo es posible si el proveedor
 **no tiene compras registradas**.
 
@@ -153,12 +197,13 @@ Otras pestañas del módulo:
 | *«Completa la verificación anti-bot para entrar»* | No marcaste el reCAPTCHA | Marca la casilla «No soy un robot» y vuelve a enviar. |
 | *«Acceso restringido»* | Tu rol no alcanza para esa sección | Pide a un administrador que te asigne el rol adecuado. |
 | *«El servicio de correo no está configurado…»* | Falta configurar el envío de correos | Escribe a libreriacartaagena302987@gmail.com. |
-| *«Error 404 al consultar /proveedores»* | El backend no tenía esa ruta | Ya está corregido; recarga la página (Ctrl + F5). |
+| *«Error 500 al consultar /proveedores»* | El enrutador local apuntaba a un servicio retirado | Ya está corregido; recarga la página (Ctrl + F5). |
 | *«Requiere rol ADMIN» / 403* | Entraste con una cuenta que no es administrador | Entra con una cuenta ADMIN. |
 | *«Ya existe un proveedor con ese RFC»* | RFC duplicado (409) | Usa el RFC real o edita el proveedor existente. |
 | *«No se puede eliminar el proveedor porque tiene compras registradas»* | El proveedor tiene historial (409) | Déjalo activo; el historial no se borra. |
 | La página sale **en blanco** | Caché de una versión anterior | Recarga con **Ctrl + F5** (ya quedó corregido en el servidor). |
 | *«Tu sesión expiró»* / te manda al login | Pasaron los 15 minutos | Vuelve a iniciar sesión. |
+| *«Token inválido o expirado»* | El token de recuperación venció (20 min) o ya se usó | Pide uno nuevo desde «¿Olvidaste tu contraseña?». |
 
 ---
 

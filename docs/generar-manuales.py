@@ -35,11 +35,15 @@ INTEGRANTES = [
     ("Cesar Omar Karass Cota", "23020143"),
 ]
 
+# (archivo, título, bajada, ¿tiene portada?)
+# Sin portada va el tríptico: son dos hojas exactas para imprimir.
 MANUALES = [
     ("Manual-de-Usuario", "Manual de Usuario",
-     "Guía de uso para clientes y administradores de la tienda en línea."),
+     "Guía de uso para clientes y administradores de la tienda en línea.", True),
     ("Manual-Tecnico", "Manual Técnico",
-     "Arquitectura, despliegue y mantenimiento para el equipo de desarrollo."),
+     "Arquitectura, despliegue y mantenimiento para el equipo de desarrollo.", True),
+    ("Triptico-Guia-Rapida", "Guía Rápida",
+     "Dos hojas para imprimir: cómo funciona la página.", False),
 ]
 
 CSS = """
@@ -67,8 +71,29 @@ pre { font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
 pre code { background: none; font-size: 8.5pt; }
 blockquote { margin: 8pt 0; padding: 4pt 10pt; border-left: 3pt solid %(vino)s;
              color: #444444; }
+.figura { margin: 10pt 0 4pt 0; text-align: center;
+          page-break-inside: avoid; }
+.figura img { border: 0.75pt solid #bbbbbb; }
+.piefig { font-size: 9pt; color: #666666; font-style: italic;
+          margin: 3pt 0 10pt 0; text-align: center; }
 hr { border: none; border-top: 0.75pt solid #bbbbbb; margin: 12pt 0; }
 a { color: %(vino)s; text-decoration: none; }
+"""
+
+TRIPTICO_CSS = """
+@page { margin: 1cm; }
+body { font-size: 8.7pt; line-height: 1.17; }
+h1 { font-size: 13.5pt; margin: 0 0 3pt 0; }
+h2 { font-size: 10.2pt; margin: 5pt 0 1pt 0; padding-bottom: 1pt; }
+h3 { font-size: 9.2pt; margin: 4pt 0 1pt 0; }
+p  { margin: 1.5pt 0; }
+ul, ol { margin: 1.5pt 0 3pt 14pt; }
+li { margin: 0.5pt 0; }
+table { margin: 2pt 0 4pt 0; font-size: 7.9pt; }
+th, td { padding: 1.4pt 3.5pt; }
+blockquote { margin: 2.5pt 0; padding: 1.5pt 5pt; }
+code { font-size: 8pt; }
+hr { margin: 6pt 0; }
 """
 
 PORTADA_CSS = """
@@ -91,6 +116,37 @@ PORTADA_CSS = """
 .portada .fecha { margin-top: 14pt; font-size: 11pt; color: #333333; }
 .portada .pie { margin-top: 16pt; font-size: 9pt; color: #888888; }
 """
+
+
+def incrustar_imagenes(html: str, ancho: int = 540) -> str:
+    """Convierte las rutas locales de <img> en data URI y las envuelve en figura.
+
+    LibreOffice guarda las imágenes referenciadas por ruta como *vínculos*
+    (se pierden al abrir el DOCX en otra máquina), en cambio con un data URI
+    las incrusta dentro del archivo. El `width` fijo sí lo respeta al importar,
+    a diferencia de `max-width` en CSS.
+    """
+    def figura(m: re.Match) -> str:
+        attrs = m.group(1)
+        alt = (re.search(r'alt="([^"]*)"', attrs) or [None, ""])[1]
+        src = (re.search(r'src="([^"]*)"', attrs) or [None, ""])[1]
+
+        if not src.startswith(("http://", "https://", "data:")):
+            archivo = (DOCS / src).resolve()
+            if not archivo.exists():
+                print(f"    AVISO: no existe la imagen {src}")
+            else:
+                mime = "image/png" if archivo.suffix.lower() == ".png" else "image/jpeg"
+                b64 = base64.b64encode(archivo.read_bytes()).decode()
+                src = f"data:{mime};base64,{b64}"
+
+        pie = f'<p class="piefig">{alt}</p>' if alt else ""
+        return (f'<div class="figura"><img src="{src}" alt="{alt}" '
+                f'width="{ancho}">{pie}</div>')
+
+    # markdown envuelve la imagen en <p>; lo abrimos para poder insertar el pie.
+    html = re.sub(r"<p>\s*(<img[^>]*>)\s*</p>", r"\1", html)
+    return re.sub(r"<img([^>]*)>", figura, html)
 
 
 def posproceso(html: str) -> str:
@@ -136,10 +192,13 @@ def portada(titulo: str, bajada: str) -> str:
 """
 
 
-def construir_html(nombre: str, titulo: str, bajada: str, destino: Path) -> Path:
+def construir_html(nombre: str, titulo: str, bajada: str, destino: Path,
+                   con_portada: bool = True) -> Path:
     md = (DOCS / f"{nombre}.md").read_text(encoding="utf-8")
     cuerpo = markdown.markdown(
         md, extensions=["tables", "fenced_code", "sane_lists", "toc"])
+    cuerpo = incrustar_imagenes(cuerpo, ancho=430 if not con_portada else 540)
+    css_extra = "" if con_portada else "\n%s\n" % (TRIPTICO_CSS % {'vino': VINO})
     html = f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -147,11 +206,12 @@ def construir_html(nombre: str, titulo: str, bajada: str, destino: Path) -> Path
 <title>{titulo} — {TIENDA}</title>
 <style>
 {CSS % {'vino': VINO}}
-{PORTADA_CSS % {'vino': VINO}}
+{css_extra}
+{PORTADA_CSS % {'vino': VINO} if con_portada else ''}
 </style>
 </head>
 <body>
-{portada(titulo, bajada)}
+{portada(titulo, bajada) if con_portada else ''}
 <div class="contenido">
 {cuerpo}
 </div>
@@ -161,11 +221,29 @@ def construir_html(nombre: str, titulo: str, bajada: str, destino: Path) -> Path
     html = posproceso(html)
     # La portada ocupa la página 1; el contenido empieza en la 2. LibreOffice
     # aplica page-break-before al primer elemento de bloque, no al div contenedor.
-    html = re.sub(r"<h1(?![^>]*page-break)",
-                  '<h1 style="page-break-before: always"', html, count=1)
+    if con_portada:
+        html = re.sub(r"<h1(?![^>]*page-break)",
+                      '<h1 style="page-break-before: always"', html, count=1)
+    else:
+        # Tríptico: la 2.ª hoja arranca en papel nuevo (el 1.er h1 es el
+        # título de la hoja 1 y NO debe saltar).
+        html = saltar_en_h1(html, n=2)
     salida = destino / f"{nombre}.html"
     salida.write_text(html, encoding="utf-8")
     return salida
+
+
+def saltar_en_h1(html: str, n: int) -> str:
+    """Pone page-break-before al n-ésimo <h1> (1-based)."""
+    contador = {"i": 0}
+
+    def reemplazo(m: re.Match) -> str:
+        contador["i"] += 1
+        if contador["i"] == n:
+            return '<h1 style="page-break-before: always"'
+        return m.group(0)
+
+    return re.sub(r"<h1(?![^>]*page-break)", reemplazo, html)
 
 
 def convertir(entrada: Path, fmt: str, salida: Path) -> Path | None:
@@ -189,9 +267,9 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="manuales-") as tmp:
         tmpdir = Path(tmp)
-        for nombre, titulo, bajada in MANUALES:
+        for nombre, titulo, bajada, con_portada in MANUALES:
             print(f"== {nombre}")
-            html = construir_html(nombre, titulo, bajada, tmpdir)
+            html = construir_html(nombre, titulo, bajada, tmpdir, con_portada)
             print(f"    html -> {html.name}")
             odt = convertir(html, "odt", tmpdir)
             if odt:
